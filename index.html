@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CoinFilterCap</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#050d0a; --bg2:#0a1610; --bg3:#0f2018;
+    --surface:#0d1f16; --surface2:#122a1c;
+    --border:#1a3d28; --border2:#0f2a1a;
+    --green:#00ff88; --green2:#00cc6a; --green3:#009950;
+    --green-dim:#00ff8822; --green-glow:#00ff8844;
+    --text:#d4ffe8; --text2:#7ab898; --text3:#3d6b52;
+    --accent2:#00e5ff; --purple:#aa66ff; --orange:#ff9944;
+    --font-mono:'Share Tech Mono',monospace;
+    --font-head:'Exo 2',sans-serif;
+    --font-body:'Rajdhani',sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.5;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border2) 1px,transparent 1px),linear-gradient(90deg,var(--border2) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;opacity:0.5;}
+  body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,0.01) 2px,rgba(0,255,136,0.01) 4px);pointer-events:none;z-index:999;}
+  .wrapper{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:0 24px;}
+
+  header{padding:18px 0 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;background:rgba(5,13,10,0.96);backdrop-filter:blur(12px);}
+  .logo{font-family:'Inter',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;text-transform:none;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;background:none !important;background-clip:unset !important;-webkit-background-clip:unset !important;filter:none !important;animation:none !important;text-shadow:none !important;display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:28px;height:28px;border:2px solid var(--green);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 10px var(--green-glow);animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 8px var(--green-glow)}50%{box-shadow:0 0 20px var(--green)}}
+  @keyframes logoPulse{0%,100%{filter:drop-shadow(0 0 8px rgba(0,255,136,0.8)) drop-shadow(0 0 20px rgba(0,255,136,0.4))}50%{filter:drop-shadow(0 0 15px rgba(0,255,136,1)) drop-shadow(0 0 40px rgba(0,255,136,0.7)) drop-shadow(0 0 60px rgba(0,255,136,0.3))}}
+  .header-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .stat-pill{font-family:var(--font-mono);font-size:11px;color:var(--text2);background:var(--surface);border:1px solid var(--border);padding:4px 10px;border-radius:20px;}
+  .stat-pill span{color:var(--green);}
+
+  .hero{padding:52px 0 32px;text-align:center;}
+  .hero-eyebrow{font-family:var(--font-mono);font-size:11px;color:var(--green3);letter-spacing:4px;text-transform:uppercase;margin-bottom:14px;}
+  .hero h1{font-family:var(--font-head);font-size:clamp(26px,5vw,54px);font-weight:800;line-height:1.1;color:var(--text);text-shadow:0 0 40px var(--green-dim);margin-bottom:8px;}
+  .hero h1 em{font-style:normal;color:var(--green);text-shadow:0 0 20px var(--green),0 0 40px var(--green-glow);}
+  .hero-sub{font-family:var(--font-mono);font-size:12px;color:var(--text3);letter-spacing:2px;margin-top:10px;}
+  .no-scam-badge{display:inline-flex;align-items:center;gap:8px;margin-top:18px;background:linear-gradient(135deg,#0a2010,#112a1a);border:1px solid var(--green3);padding:8px 20px;border-radius:40px;font-family:var(--font-mono);font-size:11px;color:var(--green2);letter-spacing:2px;}
+  .no-scam-badge::before{content:'✓';color:var(--green);font-size:14px;}
+
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin:20px 0 36px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;position:relative;overflow:hidden;}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);}
+  .stat-label{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+  .stat-val{font-family:var(--font-head);font-size:24px;font-weight:800;color:var(--green);}
+  .stat-val.blue{color:var(--accent2);} .stat-val.purple{color:var(--purple);} .stat-val.orange{color:var(--orange);}
+
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px;}
+  .search-wrap{flex:1;min-width:200px;position:relative;}
+  .search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 16px 10px 38px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;transition:border-color 0.2s;}
+  .search-wrap input:focus{border-color:var(--green);box-shadow:0 0 10px var(--green-dim);}
+  .search-wrap input::placeholder{color:var(--text3);}
+  .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;}
+  select{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;cursor:pointer;transition:border-color 0.2s;}
+  select:hover,select:focus{border-color:var(--green);}
+  .btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text2);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .btn:hover{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+  .result-count{font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-left:auto;}
+
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:40px;}
+  table{width:100%;border-collapse:collapse;}
+  thead tr{background:var(--bg3);border-bottom:2px solid var(--border);}
+  th{font-family:var(--font-mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:12px 16px;text-align:left;cursor:pointer;user-select:none;white-space:nowrap;transition:color 0.2s;}
+  th:hover{color:var(--green);} th.sorted{color:var(--green);}
+  th .sort-arrow{margin-left:4px;opacity:0.5;} th.sorted .sort-arrow{opacity:1;}
+  tbody tr{border-bottom:1px solid var(--border2);transition:background 0.15s;animation:fadeIn 0.3s ease;cursor:pointer;}
+  @keyframes fadeIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+  tbody tr:hover{background:var(--green-dim);}
+  tbody tr:last-child{border-bottom:none;}
+  td{padding:12px 16px;font-size:14px;vertical-align:middle;}
+  .rank{font-family:var(--font-mono);font-size:11px;color:var(--text3);width:40px;}
+  .symbol-cell{display:flex;align-items:center;gap:10px;}
+  .symbol-icon{width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .symbol-text{font-family:var(--font-mono);font-size:13px;color:var(--green);font-weight:bold;}
+  .name-text{font-size:13px;color:var(--text2);margin-top:1px;}
+  .cat-badge{display:inline-block;font-family:var(--font-mono);font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid;white-space:nowrap;}
+  .live-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10px;color:#00ff88;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);padding:3px 10px;border-radius:20px;white-space:nowrap;}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 1.5s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+  .cat-L1{color:#00e5ff;border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.07);}
+  .cat-L2{color:#aa66ff;border-color:rgba(170,102,255,0.3);background:rgba(170,102,255,0.07);}
+  .cat-DeFi{color:#00ff88;border-color:rgba(0,255,136,0.3);background:rgba(0,255,136,0.07);}
+  .cat-AI{color:#ff9944;border-color:rgba(255,153,68,0.3);background:rgba(255,153,68,0.07);}
+  .cat-DePIN{color:#ffdd44;border-color:rgba(255,221,68,0.3);background:rgba(255,221,68,0.07);}
+  .cat-RWA{color:#ff6699;border-color:rgba(255,102,153,0.3);background:rgba(255,102,153,0.07);}
+  .cat-Privacy{color:#cc88ff;border-color:rgba(204,136,255,0.3);background:rgba(204,136,255,0.07);}
+  .cat-Infra{color:#44ddff;border-color:rgba(68,221,255,0.3);background:rgba(68,221,255,0.07);}
+  .cat-Pay{color:#66ff99;border-color:rgba(102,255,153,0.3);background:rgba(102,255,153,0.07);}
+  .cat-Other{color:#7ab898;border-color:rgba(122,184,152,0.3);background:rgba(122,184,152,0.07);}
+  .empty-row td{text-align:center;padding:40px;color:var(--text3);font-family:var(--font-mono);font-size:12px;}
+
+  /* ── LOADER ── */
+  .loader{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1999;text-align:center;}
+  .loader-spinner{width:50px;height:50px;border:3px solid var(--border);border-top:3px solid var(--green);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px;}
+  @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+  .loader-text{font-family:var(--font-mono);font-size:12px;color:var(--text2);letter-spacing:2px;}
+
+  /* ── MARKET DATA ── */
+  .price-cell{font-family:var(--font-mono);font-size:15px;color:var(--text);font-weight:bold;}
+  .change-24h{font-family:var(--font-mono);font-size:14px;font-weight:bold;padding:2px 6px;border-radius:3px;}
+  .change-pos{color:#00ff88;background:rgba(0,255,136,0.1);}
+  .change-neg{color:#ff4444;background:rgba(255,68,68,0.1);}
+  .market-cap{font-family:var(--font-mono);font-size:14px;color:var(--text2);}
+
+  /* ── MODAL ── */
+  .modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+  .modal-overlay.open{opacity:1;pointer-events:all;}
+  .modal{background:var(--bg2);border:1px solid var(--green3);border-radius:16px;max-width:580px;width:100%;position:relative;box-shadow:0 0 60px var(--green-glow),0 0 120px rgba(0,255,136,0.06);transform:translateY(24px) scale(0.96);transition:transform 0.28s cubic-bezier(.22,1,.36,1);overflow:hidden;max-height:90vh;overflow-y:auto;}
+  .modal-overlay.open .modal{transform:none;}
+  .modal-top{background:linear-gradient(135deg,var(--bg3),var(--surface2));border-bottom:1px solid var(--border);padding:26px 26px 20px;display:flex;align-items:flex-start;gap:16px;}
+  .modal-icon{width:54px;height:54px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:12px;color:var(--green);font-weight:bold;}
+  .modal-header-info{flex:1;}
+  .modal-symbol{font-family:var(--font-mono);font-size:24px;color:var(--green);font-weight:bold;}
+  .modal-name{font-family:var(--font-head);font-size:16px;color:var(--text2);margin-top:2px;}
+  .modal-cat{margin-top:8px;}
+  .modal-close{position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:16px;cursor:pointer;transition:all 0.2s;line-height:1;}
+  .modal-close:hover{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+  .modal-body{padding:22px 26px 26px;}
+  .modal-section-title{font-family:var(--font-mono);font-size:10px;color:var(--green3);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;}
+  .modal-simple{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:20px;position:relative;overflow:hidden;}
+  .modal-simple::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),transparent);}
+  .modal-simple p{font-family:var(--font-head);font-size:16px;color:var(--text);font-weight:500;line-height:1.65;}
+  .modal-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .modal-tag{font-family:var(--font-mono);font-size:10px;padding:4px 12px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text2);}
+
+  .modal-risks-content{border-left:3px solid #f59e0b;background:rgba(245,158,11,0.05);border-radius:6px;padding:14px 16px;}
+  .modal-risks-content p{font-size:13px;color:var(--text2);line-height:1.7;margin:4px 0;}
+  .modal-live-row{display:flex;align-items:center;justify-content:space-between;margin-top:18px;padding-top:14px;border-top:1px solid var(--border2);}
+
+  footer{border-top:1px solid var(--border);padding:22px 0;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--text3);letter-spacing:2px;}
+  footer span{color:var(--green3);}
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:var(--bg2);}
+  ::-webkit-scrollbar-thumb{background:var(--green3);border-radius:3px;}
+  .toast{position:fixed;bottom:28px;right:28px;background:var(--surface2);border:1px solid var(--green);color:var(--green);font-family:var(--font-mono);font-size:12px;padding:10px 18px;border-radius:8px;box-shadow:0 0 20px var(--green-glow);z-index:9999;opacity:0;transform:translateY(8px);transition:all 0.3s;pointer-events:none;}
+  .toast.show{opacity:1;transform:none;}
+  @media(max-width:900px){.hide-md{display:none;}}
+  @media(max-width:600px){.hide-sm{display:none;}.hero{padding:28px 0 18px;}th,td{padding:10px 10px;}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <div class="logo"><div class="logo-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="color:var(--green)">
+  <circle cx="14" cy="17" r="8" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  <path d="M11 17 L10 10 L18 10 L17 17" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  <path d="M18 10 Q24 8 26 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <circle cx="26" cy="3" r="1.5" fill="currentColor"/>
+  <path d="M8 25 L20 25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M14 25 L14 25" stroke="currentColor" stroke-width="2"/>
+</svg></div>CoinFilterCap</div>
+    <div class="header-right">
+      <div class="stat-pill">TOKENS: <span id="hdr-count">78</span></div>
+      <div class="stat-pill">LIVE: <span>100%</span></div>
+      <div class="stat-pill" style="color:var(--green2)">◉ PURE UTILITY</div>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-eyebrow">// VERIFIED BUILDERS · PURE TECH · PURE VALUE</div>
+    <h1>99% of crypto is noise.<br>Here's the <em>1%</em> still building.</h1>
+    <div class="hero-sub">// CLICK ON ANY TOKEN TO UNDERSTAND THE PROJECT IN PLAIN ENGLISH</div>
+    <div class="no-scam-badge">NO SCAMS / NO MEMES / ACTIVE BUILDERS ONLY 2026</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Total Tokens</div><div class="stat-val" id="s-total">78</div></div>
+    <div class="stat-card"><div class="stat-label">Categories</div><div class="stat-val blue" id="s-cats">9</div></div>
+    <div class="stat-card"><div class="stat-label">L1 / L2</div><div class="stat-val purple" id="s-l1l2">—</div></div>
+    <div class="stat-card"><div class="stat-label">DePIN</div><div class="stat-val orange" id="s-depin">—</div></div>
+    <div class="stat-card"><div class="stat-label">AI / Compute</div><div class="stat-val" id="s-ai">—</div></div>
+    <div class="stat-card"><div class="stat-label">Privacy</div><div class="stat-val purple" id="s-priv">—</div></div>
+  </div>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search" placeholder="Search by symbol or name..."/>
+    </div>
+    <select id="filterCat"><option value="">All categories</option></select>
+    <select id="sortBy">
+      <option value="rank">Sort: Rank</option>
+      <option value="symbol">Sort: Symbol A-Z</option>
+      <option value="name">Sort: Name A-Z</option>
+      <option value="category">Sort: Category</option>
+    </select>
+    <div class="result-count" id="result-count"></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="setSort('rank')" id="th-rank">#<span class="sort-arrow">↕</span></th>
+          <th onclick="setSort('symbol')" id="th-symbol">TOKEN<span class="sort-arrow">↕</span></th>
+<th onclick="setSort('category')" id="th-category">CATEGORY<span class="sort-arrow">↕</span></th>
+          <th class="hide-sm">💰 PRIX USD</th>
+          <th class="hide-sm">24H %</th>
+          <th class="hide-md">7D %</th>
+          <th class="hide-md">MARKET CAP</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <footer><span>UTILITY CRYPTO 2026 PURE</span> · NO SCAMS · NO MEMES · PURE TECH · NOT FINANCIAL ADVICE · Data provided by <a href="https://www.coingecko.com" target="_blank" style="color:var(--green3);text-decoration:none;">CoinGecko</a></footer>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-top">
+      <div class="modal-icon" id="m-icon">???</div>
+      <div class="modal-header-info">
+        <div class="modal-symbol" id="m-symbol"></div>
+        <div class="modal-name" id="m-name"></div>
+        <div class="modal-cat"><span class="cat-badge" id="m-cat"></span></div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section-title">💡 IN PLAIN ENGLISH, FOR EVERYONE</div>
+      <div class="modal-simple"><p id="m-simple"></p></div>
+      <div class="modal-section-title">🏷 WHAT IS IT ACTUALLY USED FOR?</div>
+      <div class="modal-tags" id="m-tags"></div>
+      <div id="m-risks" style="display:none;margin-bottom:18px;">
+        <div class="modal-section-title">⚠️ WATCH OUT</div>
+        <div class="modal-risks-content" id="m-risks-content"></div>
+      </div>
+
+      <div class="modal-links" id="m-links" style="display:none;margin-top:18px;padding-top:14px;border-top:1px solid var(--border2);">
+        <div class="modal-section-title">🔗 RESOURCES</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;"></div>
+      </div>
+      <div class="modal-live-row">
+        <span class="live-badge"><span class="live-dot"></span>LIVE BUILDER 2026</span>
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">ESC or click outside to close</span>
+      </div>
+    </div>
+    <div class="modal-close" onclick="closeModalDirect()">✕</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- LOADER -->
+<div class="loader" id="loader" style="display:none;">
+  <div class="loader-spinner"></div>
+  <div class="loader-text">⟳ UPDATING DATA</div>
+</div>
+
+<script>
+const data = [
+  {rank:1,symbol:'BTC',name:'Bitcoin',category:'L1 PoW',status:'Live High TVL',
+   simple:"This is the very first cryptocurrency, created in 2009. Think of it as a digital gold coin that nobody controls — not a bank, not a government. People use it to store value, like gold, but on the internet.",
+   tags:['Store of Value','Digital Gold','Decentralized','Global Network'],
+   risks:[],
+   desc:'Digital gold base layer — première blockchain PoW, 15 ans de sécurité prouvée.',
+   x:'https://x.com/bitcoin',website:'https://bitcoin.org'},
+  {rank:2,symbol:'ETH',name:'Ethereum',category:'L1 Settlement',status:'Live High TVL',
+   simple:"Ethereum is like a decentralized App Store. Developers can build applications (DeFi, NFTs, games) without asking anyone's permission. Everything runs automatically through 'smart contracts'.",
+   tags:['Decentralized Applications','Smart Contracts','DeFi','Web3 Foundation'],
+   risks:[],
+   desc:'DeFi settlement layer — smart contracts EVM, plus de 1 000 apps actives.',
+   x:'https://x.com/ethereum',website:'https://ethereum.org'},
+  {rank:3,symbol:'SOL',name:'Solana',category:'L1 TPS',status:'Live High TVL',
+   simple:"Solana is an ultra-fast blockchain. Where Bitcoin handles 7 transactions per second, Solana handles 65,000. It's like going from a two-lane road to a 100-lane highway. Perfect for payments and gaming.",
+   tags:['Ultra Fast','Very Low Fees','Payments','NFT and Gaming'],
+   risks:[],
+   desc:'High-throughput L1 optimized for speed and low fees.',
+   x:'https://x.com/solana',website:'https://solana.com'},
+  {rank:4,symbol:'BNB',name:'BNB',category:'L1 Hybrid EVM',status:'Live High TVL',
+   simple:"BNB is the native currency of Binance, the world's largest crypto exchange. It's used to pay fees on their blockchain and gives you discounts. It's also a full ecosystem of applications.",
+   tags:['Reduced Fees','Binance Ecosystem','EVM Compatible','DeFi BSC'],
+   risks:[
+    "Heavily centralized — Binance controls a large portion of BNB supply and its utility is tied to the Binance ecosystem"
+   ],
+   desc:'Hybrid EVM chain powering BSC ecosystem and Binance products.',
+   x:'https://x.com/BinanceChain',website:'https://www.bnbchain.org'},
+  {rank:5,symbol:'XRP',name:'Ripple',category:'Payments',status:'Live Builder',
+   simple:"XRP lets banks send money internationally in seconds, for almost nothing. Today, an international wire transfer takes 2-5 days and costs a lot. XRP does it in 3 seconds for a few cents.",
+   tags:['International Transfers','Banks and Institutions','Ultra Fast','Near-Free'],
+   risks:[
+    "Highly centralized — Ripple Labs holds a large escrow of XRP and releases tokens regularly causing sell pressure",
+    "Banking adoption has been slower than promised despite years of partnerships announcements",
+    "Most XRP transactions are speculative, actual ODL payment volume remains limited"
+   ],
+   desc:'Cross-border settlement protocol for banks and financial institutions.',
+   x:'https://x.com/XRPLedger',website:'https://xrpl.org'},
+  {rank:6,symbol:'AVAX',name:'Avalanche',category:'L1 Subnets',status:'Live Builder',
+   simple:"Avalanche lets companies or communities create their own custom blockchain in just a few clicks. Games, banks, or governments can have their own chain that's interconnected with all the others.",
+   tags:['Custom Subnets','Enterprise','DeFi','Fintech'],
+   risks:[],
+   desc:'Subnet architecture enabling custom sovereign blockchains at scale.',
+   x:'https://x.com/avax',website:'https://www.avax.network'},
+  {rank:7,symbol:'DOT',name:'Polkadot',category:'L1 Parachains',status:'Live Builder',
+   simple:"Polkadot is like a highway that connects several different highways. Each blockchain is a 'parachain' that can communicate with the others. The goal: connect all blockchains together the way the internet connects websites.",
+   tags:['Interoperability','Multi-Chain','Parachains','Web3 Foundation'],
+   risks:[
+    "Parachain model has been slower to gain traction than originally anticipated",
+    "Complex architecture creates friction for developers compared to simpler ecosystems",
+    "Token inflation from staking rewards creates constant sell pressure",
+    "Ecosystem fragmentation across many parachains dilutes liquidity and users"
+   ],
+   desc:'Heterogeneous multi-chain protocol connecting sovereign parachains.',
+   x:'https://x.com/Polkadot',website:'https://polkadot.network'},
+  {rank:8,symbol:'TRX',name:'TRON',category:'L1 dApps',status:'Live High TVL',
+   simple:"TRON is very popular in Asia, especially for stablecoin transfers (USDT). If you're sending digital dollars somewhere in the world, there's a good chance it's going through TRON.",
+   tags:['USDT Stablecoins','Fast Transfers','dApps','Strong in Asia'],
+   risks:[
+    "Justin Sun's leadership has been surrounded by constant controversy and regulatory scrutiny",
+    "Heavily associated with USDD stablecoin which has faced depeg concerns",
+    "Ecosystem heavily used for gambling and high-risk DeFi with questionable legitimacy",
+    "Centralization concerns — Justin Sun has significant control over the network"
+   ],
+   desc:'High-volume dApp chain dominant for USDT stablecoin transfers.',
+   x:'https://x.com/TRON_DAO',website:'https://tron.network'},
+  {rank:9,symbol:'ADA',name:'Cardano',category:'L1 PoS Research',status:'Live Builder',
+   simple:"Cardano is the 'scientific' blockchain. Every feature is first studied in academic papers, then deployed. It's slower, but rock-solid. Like building a house with certified engineers.",
+   tags:['Academic Research','Slow and Safe Development','Africa','Eco-Friendly PoS'],
+   risks:[
+    "Development pace is extremely slow compared to competitors — features take years to ship",
+    "Smart contract adoption remains limited despite Cardano being live for years",
+    "Charles Hoskinson's vocal presence creates personality-driven narrative risk",
+    "Real dApp usage and TVL still minimal compared to Ethereum, Solana or BSC"
+   ],
+   desc:'Research-driven PoS chain with formal verification methodology.',
+   x:'https://x.com/cardano',website:'https://cardano.org'},
+  {rank:10,symbol:'TON',name:'Toncoin',category:'L1 Telegram',status:'Live Builder',
+   simple:"TON is the blockchain of Telegram, the messaging app with 900 million users. The idea: let all Telegram users send money in a chat just as easily as sending a text message.",
+   tags:['Integrated with Telegram','900M Potential Users','Payments','Mini-Apps'],
+   risks:[],
+   desc:'Telegram-integrated blockchain enabling mass consumer payment onboarding.',
+   x:'https://x.com/ton_blockchain',website:'https://ton.org'},
+  {rank:11,symbol:'SUI',name:'Sui',category:'L1 Parallel',status:'Live Builder',
+   simple:"Sui processes multiple transactions at the same time, in parallel — like having several checkout lanes open at a supermarket. The result: very fast and low-cost. Built for video games and mainstream apps.",
+   tags:['Parallel and Fast','Gaming and NFT','Mainstream','Move Language'],
+   risks:[],
+   desc:'Object-based parallel execution chain using the Move programming language.',
+   x:'https://x.com/SuiNetwork',website:'https://sui.io'},
+  {rank:12,symbol:'NEAR',name:'NEAR Protocol',category:'L1 Sharding',status:'Live Builder',
+   simple:"NEAR is designed for everyday users. It lets you create an account with just a name (like 'alice.near'), no complicated keys required. The goal: make crypto as simple as using Facebook.",
+   tags:['Very Easy to Use','Account Abstraction','Human-Readable Accounts','Accessible Web3'],
+   risks:[
+    "Despite solid technology, developer and user adoption remains relatively modest",
+    "Faces intense competition from Solana, Aptos and other high-performance L1s",
+    "NEAR foundation has significant influence over the ecosystem direction",
+    "DeFi ecosystem TVL remains low compared to leading chains"
+   ],
+   desc:'Sharded L1 with chain abstraction simplifying Web3 onboarding.',
+   x:'https://x.com/NEARProtocol',website:'https://near.org'},
+  {rank:13,symbol:'HBAR',name:'Hedera',category:'L1 Enterprise',status:'Live Builder',
+   simple:"Hedera is the blockchain of choice for large enterprises. Google, IBM, and Boeing use it. Unlike others, it's governed by a council of multinational corporations. It's very fast, secure, and regulation-friendly.",
+   tags:['Fortune 500 Companies','Council Governance','Highly Secure','Regulated'],
+   risks:[],
+   desc:'ABFT hashgraph consensus used by Google, IBM, Boeing and major corporations.',
+   x:'https://x.com/Hedera',website:'https://hedera.com'},
+  {rank:14,symbol:'INJ',name:'Injective',category:'L1 DeFi',status:'Live Builder',
+   simple:"Injective is a blockchain built specifically for decentralized finance. It has an on-chain order book (like a real stock exchange, but without a middleman) and lets you trade crypto, tokenized stocks, or commodities.",
+   tags:['Decentralized Exchange','Order Book','Decentralized Finance','Derivatives'],
+   risks:[],
+   desc:'DeFi-native Cosmos L1 with on-chain order book for financial products.',
+   x:'https://x.com/Injective_',website:'https://injective.com'},
+  {rank:15,symbol:'OP',name:'Optimism',category:'L2 Optimistic',status:'Live Builder',
+   simple:"Optimism is an Ethereum 'layer 2'. It's like an express lane that bundles thousands of transactions, processes them quickly, then posts a summary to Ethereum. The result: 10x cheaper, 10x faster.",
+   tags:['Cheaper Ethereum','Layer 2','Superchain','OP Stack Ecosystem'],
+   risks:[
+    "Large token unlock schedule creates significant sell pressure over coming years",
+    "Base (Coinbase L2) uses OP Stack but captures value independently from Optimism",
+    "Long-term fee revenue model is still unclear as L2 fees trend toward zero",
+    "Faces intense competition from Arbitrum, Base and ZK rollups"
+   ],
+   desc:'Optimistic rollup L2 powering the multi-chain Superchain vision.',
+   x:'https://x.com/Optimism',website:'https://optimism.io'},
+  {rank:16,symbol:'ARB',name:'Arbitrum',category:'L2',status:'Live High TVL',
+   simple:"Arbitrum is Ethereum's most widely used 'layer 2' solution. It takes expensive Ethereum transactions and processes them off-chain, then reconciles them with Ethereum. Most major DeFi projects run on Arbitrum.",
+   tags:['Ethereum Layer 2','Largest L2 TVL','Dominant DeFi','Secure Rollup'],
+   risks:[
+    "Arbitrum DAO governance has faced criticism for lack of decentralization in early decisions",
+    "Large token unlocks scheduled for team and investors create ongoing sell pressure",
+    "Intense L2 competition from Optimism, Base and zkSync threatens market share",
+    "Long-term value accrual to ARB token remains unclear as fees go to sequencer"
+   ],
+   desc:'Leading Ethereum L2 rollup by TVL and developer ecosystem size.',
+   x:'https://x.com/arbitrum',website:'https://arbitrum.io'},
+  {rank:17,symbol:'STRK',name:'Starknet',category:'L2 ZK',status:'Live Builder',
+   simple:"Starknet uses advanced mathematics ('zero-knowledge proofs') to verify thousands of transactions at once without revealing the details. It's like an auditor who certifies 10,000 accounts just by reviewing a summary.",
+   tags:['Zero-Knowledge','Advanced Mathematics','Private and Fast','L2 Scalability'],
+   risks:[
+    "Very large token supply with significant unlocks for early investors and team",
+    "ZK proof generation is still slow and expensive limiting throughput gains",
+    "Starknet has faced criticism for centralization of the sequencer",
+    "Developer experience with Cairo language is more complex than Solidity"
+   ],
+   desc:'ZK-STARK proof system enabling verifiable computation at massive scale.',
+   x:'https://x.com/Starknet',website:'https://starknet.io'},
+  {rank:18,symbol:'APT',name:'Aptos',category:'L1 Parallel',status:'Live Builder',
+   simple:"Aptos is a fast blockchain created by former Meta (Facebook) engineers. It uses a special language (Move) that makes smart contracts far more secure. Built to be reliable at a global scale.",
+   tags:['Ex-Meta Team','Highly Secure','Move Language','High Performance'],
+   risks:[
+    "Large token unlock schedule creates significant sell pressure over coming years",
+    "Aptos Foundation and early investors hold a disproportionate share of supply",
+    "Despite strong technology, dApp ecosystem and TVL growth has been slower than expected",
+    "Faces intense competition from Solana, SUI and other high-performance L1s"
+   ],
+   desc:'Parallel execution Move L1 built by former Meta Diem engineers.',
+   x:'https://x.com/AptosLabs',website:'https://aptos.dev'},
+  {rank:19,symbol:'TIA',name:'Celestia',category:'L1 Modular',status:'Live Builder',
+   simple:"Celestia solves a problem nobody thought to separate: data storage. It specializes purely in 'storing and certifying data', leaving execution to other blockchains. This is modularity.",
+   tags:['Data Availability','Modular Blockchains','Core Infrastructure','Rollups'],
+   risks:[
+    "Modular blockchain thesis is still being proven — adoption by rollups is early stage",
+    "Large token unlocks for early investors scheduled over coming years",
+    "Celestia faces competition from EigenDA, Avail and other data availability layers",
+    "Revenue model depends entirely on rollups paying for data availability which is still limited"
+   ],
+   desc:'Modular data availability layer enabling scalable rollup ecosystems.',
+   x:'https://x.com/celestia',website:'https://celestia.org'},
+  {rank:20,symbol:'ALGO',name:'Algorand',category:'L1 PPoS',status:'Live Builder',
+   simple:"Algorand is a highly eco-friendly blockchain that validates transactions in seconds with instant finality (no rollbacks possible). Used for official government and financial projects.",
+   tags:['Highly Eco-Friendly','Instant Finality','Governments','National Stablecoins'],
+   risks:[],
+   desc:'Pure PoS blockchain with instant finality used by governments and banks.',
+   x:'https://x.com/algorand',website:'https://algorand.com'},
+  {rank:21,symbol:'QNT',name:'Quant',category:'Infra Interop',status:'Live Builder',
+   simple:"Quant solves the problem of blockchains communicating with each other. Imagine only being able to send emails to users on the same carrier. Quant is the protocol that lets all blockchains talk to one another.",
+   tags:['Interoperability','Multi-Ledger','Central Banks','Blockchain Connectivity'],
+   risks:[],
+   desc:'Overledger OS enabling seamless multi-ledger blockchain interoperability.',
+   x:'https://x.com/quant_network',website:'https://quant.network'},
+  {rank:22,symbol:'UNI',name:'Uniswap',category:'DeFi DEX',status:'Live High TVL',
+   simple:"Uniswap is the world's largest decentralized exchange. You can swap any crypto, 24/7, with no account, no KYC, no middleman. Automated robots (liquidity pools) set the prices.",
+   tags:['Decentralized Exchange','No Middleman','Liquidity Pools','Multi-Chain'],
+   risks:[],
+   desc:'Largest decentralized AMM protocol with multi-chain expansion.',
+   x:'https://x.com/Uniswap',website:'https://uniswap.org'},
+  {rank:23,symbol:'AAVE',name:'Aave',category:'DeFi Lending',status:'Live High TVL',
+   simple:"Aave is a decentralized bank. You can deposit your crypto and earn interest, or borrow crypto by putting up other crypto as collateral. Everything works automatically, no paperwork, available anywhere in the world.",
+   tags:['Decentralized Lending','Interest-Bearing Deposits','No KYC','Flash Loans'],
+   risks:[],
+   desc:'Leading over-collateralized lending protocol across 12+ blockchains.',
+   x:'https://x.com/aave',website:'https://aave.com'},
+  {rank:24,symbol:'LINK',name:'Chainlink',category:'Infra Oracles',status:'Live Builder',
+   simple:"Blockchains are isolated from the internet. Chainlink is the bridge that brings them real-world information: the dollar price, the weather, sports scores. Without Chainlink, a smart contract can't know if BTC is worth $50k.",
+   tags:['Real-Time Prices','Real-World Data','#1 Oracle','Secures DeFi'],
+   risks:[],
+   desc:'Decentralized oracle network securing billions in DeFi smart contract value.',
+   x:'https://x.com/chainlink',website:'https://chain.link'},
+  {rank:25,symbol:'PYTH',name:'Pyth Network',category:'Infra Oracles',status:'Live Builder',
+   simple:"Pyth is a stock-quote system for blockchains. Major financial institutions (Binance, Jump Trading) publish their prices directly to Pyth, which broadcasts them in real time across all blockchains.",
+   tags:['Ultra-Precise Prices','Financial Data','Real-Time','Financial Institutions'],
+   risks:[
+    "Oracle space is dominated by Chainlink which has significantly more integrations",
+    "Large portion of supply held by insiders with ongoing unlock schedule",
+    "Revenue is tied to DeFi activity — a market downturn directly impacts protocol fees",
+    "Switching costs for protocols already using Chainlink are high"
+   ],
+   desc:'High-fidelity on-chain price feeds published by first-party institutions.',
+   x:'https://x.com/PythNetwork',website:'https://pyth.network'},
+  {rank:26,symbol:'GRT',name:'The Graph',category:'Infra Indexing',status:'Live Builder',
+   simple:"The Graph is the search engine of blockchains. Data on a blockchain is unorganized — it's pure chaos. The Graph indexes all of it and lets developers run precise queries, just like Google indexes the web.",
+   tags:['Blockchain Indexing','GraphQL Queries','DeFi Infrastructure','Web3 Search Engine'],
+   risks:[],
+   desc:'Indexing protocol enabling GraphQL queries across blockchain data.',
+   x:'https://x.com/graphprotocol',website:'https://thegraph.com'},
+  {rank:27,symbol:'TAO',name:'Bittensor',category:'AI Agents',status:'Live Builder',
+   simple:"Bittensor is a network where artificial intelligences 'sell' their services to each other and get paid based on quality. Imagine a marketplace where thousands of AIs compete against one another and the best ones earn the most.",
+   tags:['Decentralized AI','Intelligence Marketplace','Specialized Subnets','AI Mining'],
+   risks:[
+    "Valuation is highly speculative relative to actual proven utility at current scale",
+    "Complex subnet model is still maturing and difficult to evaluate objectively",
+    "Heavy reliance on narrative around decentralized AI which is hard to verify",
+    "Small number of validators raises centralization concerns"
+   ],
+   desc:'Decentralized AI marketplace with subnet-based intelligence competition.',
+   x:'https://x.com/opentensor',website:'https://bittensor.com'},
+  {rank:28,symbol:'RENDER',name:'Render Network',category:'AI GPU DePIN',status:'Live Builder',
+   simple:"Render connects people who need GPU power (for AI or 3D rendering) with individuals who have idle graphics cards. You can rent out your GPU overnight and earn RENDER tokens while you sleep.",
+   tags:['GPU Rental','3D Rendering','AI and Creatives','Sharing Economy'],
+   risks:[],
+   desc:'Distributed GPU rendering network for AI inference and creative workloads.',
+   x:'https://x.com/rendertoken',website:'https://render.com'},
+  {rank:29,symbol:'FET',name:'Fetch.ai',category:'AI Agents',status:'Live Builder',
+   simple:"Fetch.ai lets you create 'autonomous agents' — AI bots that act on your behalf: buying tickets, optimizing your energy use, negotiating prices. The AI acts, it doesn't just answer.",
+   tags:['Autonomous Agents','Active AI','ASI Alliance','Web3 Automation'],
+   risks:[],
+   desc:'Autonomous economic agents on the ASI Alliance AI infrastructure.',
+   x:'https://x.com/Fetch_ai',website:'https://fetch.ai'},
+  {rank:30,symbol:'ONDO',name:'Ondo Finance',category:'RWA Yield',status:'Live Builder',
+   simple:"Ondo lets you invest in US Treasury bonds directly from the blockchain. Previously, you needed a US bank account. Now, someone in Africa or Asia can hold tokenized US government bonds.",
+   tags:['Tokenized Treasuries','Real Yields','Global Access','Institutional'],
+   risks:[],
+   desc:'Tokenized US Treasuries and institutional-grade RWA financial products.',
+   x:'https://x.com/OndoFinance',website:'https://ondo.finance'},
+  {rank:31,symbol:'SYRUP',name:'Maple Finance',category:'RWA Lending',status:'Live Builder',
+   simple:"Maple is a decentralized credit bank for businesses. Companies borrow millions in crypto backed by real assets. Everything is managed on-chain with full transparency — no one can falsify the books.",
+   tags:['Institutional Credit','Real Assets','Transparent','Secured Loans'],
+   risks:[],
+   desc:'Institutional on-chain credit markets with real-world asset collateral.',
+   x:'https://x.com/maplefinance',website:'https://maple.finance'},
+  {rank:33,symbol:'CRV',name:'Curve Finance',category:'DeFi DEX',status:'Live High TVL',
+   simple:"Curve specializes in swapping stablecoins (USDT, USDC, DAI...) with minimal price slippage. If you convert $1 million USDT to USDC, Curve gives you almost exactly $1 million back — nearly zero loss.",
+   tags:['Stablecoin Exchange','Minimal Slippage','Liquidity Pools','DeFi Backbone'],
+   risks:[],
+   desc:'Specialized AMM protocol for stablecoin and pegged-asset swaps at scale.',
+   x:'https://x.com/CurveFinance',website:'https://curve.fi'},
+  {rank:34,symbol:'LDO',name:'Lido',category:'DeFi Liquid Staking',status:'Live High TVL',
+   simple:"To earn rewards on Ethereum, you normally need to lock up 32 ETH (around $100,000). Lido lets you do it with any amount, and gives you a 'stETH' token you can still use elsewhere in the meantime.",
+   tags:['Liquid Staking','stETH','No Minimum','Democratizes Staking'],
+   risks:[
+    "Regulatory risk around liquid staking — SEC has shown interest in staking services",
+    "Ethereum's move toward more native staking options could reduce Lido's dominance",
+    "Lido controls a very large share of staked ETH raising centralization concerns for Ethereum",
+    "LDO token value accrual is limited — most value goes to stakers not token holders"
+   ],
+   desc:'Largest liquid staking protocol — hold stETH while earning ETH staking rewards.',
+   x:'https://x.com/LidoFinance',website:'https://lido.fi'},
+  {rank:35,symbol:'EIGEN',name:'EigenLayer',category:'Infra Restaking',status:'Live Builder',
+   simple:"EigenLayer reuses Ethereum's security to protect other projects. It's like your home alarm system also protecting your neighbor's house. ETH stakers can 're-stake' to secure multiple networks at once.",
+   tags:['Re-Staking','Shared Security','ETH Infrastructure','AVS Services'],
+   risks:[],
+   desc:'Restaking protocol extending Ethereum cryptoeconomic security to new services.',
+   x:'https://x.com/eigencloud',website:'https://eigenlayer.xyz'},
+  {rank:36,symbol:'PENDLE',name:'Pendle',category:'DeFi Yield',status:'Live High TVL',
+   simple:"Pendle lets you separate an asset from its future returns. Imagine buying a fruit tree and then selling the next three years' worth of fruit separately while keeping the tree. A financial innovation for sophisticated investors.",
+   tags:['Yield Tokenization','Advanced Strategies','Yield Trading','Innovative DeFi'],
+   risks:[
+    "Yield tokenization is a complex financial primitive that limits mainstream adoption",
+    "Revenue is highly dependent on DeFi bull market conditions and high yields",
+    "Smart contract complexity increases audit risk and potential exploit surface",
+    "User base is mostly sophisticated DeFi users — mass market appeal is limited"
+   ],
+   desc:'Yield tokenization protocol separating principal from future yield streams.',
+   x:'https://x.com/pendle_fi',website:'https://pendle.finance'},
+  {rank:37,symbol:'RUNE',name:'THORChain',category:'DeFi DEX',status:'Live Builder',
+   simple:"THORChain is the only platform that lets you swap native Bitcoin for native Ethereum directly, without a middleman. Before, you had to go through centralized exchanges to do this.",
+   tags:['Native Cross-Chain Swap','Bitcoin ↔ Ethereum','No Middleman','Truly Decentralized'],
+   risks:[
+    "THORChain has suffered multiple major exploits losing tens of millions in user funds",
+    "Cross-chain liquidity model is technically complex and carries significant smart contract risk",
+    "Native asset swaps require deep liquidity pools which are hard to maintain sustainably",
+    "Relatively small team managing an extremely complex multi-chain protocol"
+   ],
+   desc:'Native cross-chain DEX enabling direct non-wrapped asset swaps between chains.',
+   x:'https://x.com/THORChain',website:'https://thorchain.org'},
+  {rank:38,symbol:'SNX',name:'Synthetix',category:'DeFi Synthetics',status:'Live Builder',
+   simple:"Synthetix lets you trade 'copies' of real-world assets on the blockchain: gold, silver, Apple stock, dollars — without ever owning the actual asset. Everything is managed by smart contracts. A decentralized synthetic exchange.",
+   tags:['Synthetic Assets','Tokenized Gold','Tokenized Stocks','Decentralized Exchange'],
+   risks:[],
+   desc:'Synthetic asset protocol providing decentralized exposure to real-world markets.',
+   x:'https://x.com/synthetix_io',website:'https://synthetix.io'},
+  {rank:39,symbol:'FIL',name:'Filecoin',category:'DePIN Storage',status:'Live Builder',
+   simple:"Filecoin is a decentralized Dropbox or Google Drive. Instead of trusting Google with your files, you store them across thousands of individuals worldwide, encrypted. Nobody can delete or censor them.",
+   tags:['Decentralized Storage','Anti-Censorship','You Own Your Data','Cloud Alternative'],
+   risks:[],
+   desc:'Decentralized storage network with cryptographic proof-of-spacetime system.',
+   x:'https://x.com/Filecoin',website:'https://filecoin.io'},
+  {rank:40,symbol:'AR',name:'Arweave',category:'DePIN Storage',status:'Live Builder',
+   simple:"Arweave lets you store data forever with a single payment. You pay once, and your file is permanently stored for at least 200 years. Perfect for archiving important documents or digital art.",
+   tags:['Permanent Storage','One-Time Payment','Eternal Archiving','Permaweb'],
+   risks:[],
+   desc:'Permanent decentralized storage with a one-time-payment sustainability model.',
+   x:'https://x.com/ArweaveEco',website:'https://arweave.org'},
+  {rank:41,symbol:'HNT',name:'Helium',category:'DePIN IoT',status:'Live Builder',
+   simple:"Helium is a decentralized WiFi / 5G network. Individuals buy a small antenna for their home and create network coverage. In return, they receive HNT. A global telecom operator with no centralized infrastructure.",
+   tags:['Decentralized Network','Connected IoT','Community Antennas','5G Coverage'],
+   risks:[],
+   desc:'Decentralized wireless network for IoT and 5G coverage by community hotspots.',
+   x:'https://x.com/helium',website:'https://helium.com'},
+  {rank:42,symbol:'IOTA',name:'IOTA',category:'DePIN IoT',status:'Live Builder',
+   simple:"IOTA is built for connected devices (fridges, cars, sensors). Unlike other blockchains, there are zero transaction fees — devices can send micro-payments to each other for free.",
+   tags:['Connected Devices','Zero Fees','Micro-Transactions','Industry 4.0'],
+   risks:[
+    "IOTA has faced multiple years of delays and technical pivots creating trust issues",
+    "DAG-based architecture has proven difficult to secure without a coordinator",
+    "IoT mass adoption has been slower than the entire industry predicted",
+    "Small developer ecosystem compared to smart contract platforms"
+   ],
+   desc:'DAG-based ledger designed for feeless machine-to-machine micropayments.',
+   x:'https://x.com/iota',website:'https://iota.org'},
+  {rank:43,symbol:'GLM',name:'Golem',category:'DePIN Compute',status:'Live Builder',
+   simple:"Golem is an Airbnb for computing power. Have a powerful computer sitting idle at night? Rent it out on Golem and receive GLM. Researchers or studios need computing power? They rent it from you.",
+   tags:['Computer Rental','Distributed Computing','Sharing Economy','Rendering and Compute'],
+   risks:[
+    "Compute marketplace adoption has been slower than anticipated since launch",
+    "Faces strong competition from Akash, Render and centralized cloud providers",
+    "Golem Network has been in development for many years with modest traction",
+    "Enterprise clients prefer established cloud providers over decentralized alternatives"
+   ],
+   desc:'Peer-to-peer distributed compute marketplace for CPU and GPU workloads.',
+   x:'https://x.com/GolemProject',website:'https://golem.network'},
+  {rank:44,symbol:'CKB',name:'Nervos',category:'L1 Modular',status:'Live Builder',
+   simple:"Nervos is a modular blockchain that separates storage from execution. Its 'cell' system is highly flexible and allows complex applications to be built. Compatible with Bitcoin, which gives it a unique edge.",
+   tags:['Modular Architecture','Bitcoin Compatible','Advanced UTXO','Flexible'],
+   risks:[
+    "Nervos has struggled to gain mainstream developer and user adoption since launch",
+    "UTXO-based model is innovative but harder for developers coming from Ethereum",
+    "Limited DeFi ecosystem and TVL compared to leading smart contract platforms",
+    "Bitcoin compatibility narrative has not yet translated into significant real usage"
+   ],
+   desc:'Modular blockchain with a UTXO-based CKB cell model for flexible computation.',
+   x:'https://x.com/NervosNetwork',website:'https://nervos.org'},
+  {rank:45,symbol:'ROSE',name:'Oasis Network',category:'Privacy Confidential',status:'Live Builder',
+   simple:"Oasis lets you run smart contracts in a secure environment where even the network operators cannot see your data. Like a digital safe where nobody has access — not even the manufacturer.",
+   tags:['Confidential Data','Secure TEE','AI and Private Data','Healthcare and Finance'],
+   risks:[],
+   desc:'Confidential compute blockchain with TEE-secured smart contract environments.',
+   x:'https://x.com/OasisProtocol',website:'https://oasis.io'},
+  {rank:46,symbol:'COTI',name:'COTI',category:'Privacy L2',status:'Live Builder',
+   simple:"COTI is an Ethereum layer 2 specialized in privacy. It enables private financial transactions — like paying someone without everyone seeing the amount. Useful for businesses.",
+   tags:['Private Transactions','Confidential Finance','Ethereum L2','Garbled Circuits'],
+   risks:[
+    "Privacy L2 space is niche and faces regulatory pressure as governments target private transactions",
+    "Garbled circuits technology is complex and has limited developer adoption so far",
+    "COTI has pivoted its focus multiple times creating some community trust issues",
+    "Limited DeFi integrations and ecosystem partners compared to larger L2s"
+   ],
+   desc:'Privacy-focused L2 using garbled circuits for confidential DeFi transactions.',
+   x:'https://x.com/COTInetwork',website:'https://coti.io'},
+  {rank:47,symbol:'LINEA',name:'Linea',category:'L2 ZK',status:'Live Builder',
+   simple:"Linea is the layer 2 solution from Consensys (the creators of MetaMask). It uses mathematical proofs (ZK) to compress thousands of Ethereum transactions. Built directly into MetaMask, it reaches millions of users.",
+   tags:['MetaMask Integrated','ZK Rollup','Cheap Ethereum','Consensys'],
+   risks:[
+    "Linea is a Consensys product — heavily dependent on Consensys financial health and strategy",
+    "ZK proof technology is still maturing with ongoing performance improvements needed",
+    "Faces intense competition from Arbitrum, Optimism, Base and other established L2s",
+    "Centralized sequencer raises decentralization concerns in the short term"
+   ],
+   desc:'Consensys ZK rollup with lattice-based prover, integrated in MetaMask.',
+   x:'https://x.com/LineaInisio',website:'https://linea.build'},
+  {rank:48,symbol:'ESP',name:'Espresso',category:'Infra Sequencer',status:'Live Builder',
+   simple:"In L2 blockchains, someone decides the order transactions are processed — that's the 'sequencer'. Espresso decentralizes this role so that nobody can manipulate the order for their own benefit. Fairness in the queue.",
+   tags:['Decentralized Sequencer','Transaction Fairness','Anti-Manipulation','L2 Infrastructure'],
+   risks:[],
+   desc:'Decentralized shared sequencer for fair and censorship-resistant L2 ordering.',
+   x:'https://x.com/EspressoSys',website:'https://www.espressosys.com/'},
+  {rank:49,symbol:'ZRO',name:'LayerZero',category:'Infra Cross-chain',status:'Live Builder',
+   simple:"LayerZero is the 'omnichain protocol' — it lets a single application run on 50 blockchains at once. Imagine a mobile app that works on iOS, Android, and Windows simultaneously, but for blockchains.",
+   tags:['50+ Blockchains','Cross-Chain Messaging','Omnichain','Universal Infrastructure'],
+   risks:[],
+   desc:'Omnichain interoperability protocol for trustless cross-chain messaging.',
+   x:'https://x.com/LayerZero_Core',website:'https://layerzero.network'},
+  {rank:50,symbol:'KSM',name:'Kusama',category:'L1 Canary',status:'Live Builder',
+   simple:"Kusama is the 'test version' of Polkadot, but with real funds. New features are tested here before going to Polkadot. It's risky and experimental, but it enables fast innovation.",
+   tags:['Experimental','Test Before Polkadot','Fast Innovation','Dev Community'],
+   risks:[],
+   desc:'Polkadot canary network for rapid battle-testing of parachain innovations.',
+   x:'https://x.com/kusamanetwork',website:'https://kusama.network'},
+  {rank:51,symbol:'PEAQ',name:'Peaq Network',category:'DePIN Machines',status:'Live Builder',
+   simple:"Peaq is the blockchain for physical machines. Autonomous cars, robots, drones — each machine can have its own blockchain identity, earn tokens for its services, and automatically pay other machines.",
+   tags:['Machine Economy','Autonomous Vehicles','Paying Robots','Industry 4.0'],
+   risks:[],
+   desc:'DePIN blockchain giving machines sovereign identity and economic participation.',
+   x:'https://x.com/peaq_network',website:'https://peaq.io'},
+  {rank:52,symbol:'QUBIC',name:'Qubic',category:'AI uPoW',status:'Live Builder',
+   simple:"Qubic is a blockchain without traditional 'blocks' that uses mining to train AIs. Instead of solving useless puzzles like Bitcoin, Qubic miners run useful artificial intelligence algorithms.",
+   tags:['AI and Mining','Blockless','Useful Unlike Bitcoin','AI Algorithms'],
+   risks:[
+    "Very early stage project with mainnet still maturing and limited real world usage",
+    "Extremely complex cryptography makes it hard to audit and verify independently",
+    "Small team and limited funding compared to well established competitors",
+    "Lack of mainstream awareness makes ecosystem growth slow and uncertain"
+   ],
+   desc:'Blockless AI proof-of-work consensus where mining trains useful AI models.',
+   x:'https://x.com/QubicNetwork',website:'https://qubic.li'},
+  {rank:53,symbol:'QUILIBRIUM',name:'Quilibrium',category:'Infra P2P',status:'Live Builder',
+   simple:"Quilibrium is a decentralized and private internet infrastructure. It's like rebuilding the internet from scratch, without Big Tech, without surveillance, without a central point. An internet where nobody knows who's talking to whom.",
+   tags:['Private Internet','Anti-Surveillance','Decentralized','Core Infrastructure'],
+   risks:[
+    "Very early stage project — mainnet still maturing with limited real-world usage so far",
+    "Extremely complex cryptography makes it hard to audit and understand for most developers",
+    "Small team and limited funding compared to well-established competitors",
+    "Low liquidity and very high price volatility due to small market cap",
+    "Lack of mainstream awareness makes ecosystem growth slow and uncertain"
+   ],
+   desc:'P2P compute infrastructure resistant to surveillance and censorship.',
+   x:'https://x.com/QuilibriumInc',website:'https://quilibrium.com'},
+  {rank:54,symbol:'ZANO',name:'Zano',category:'Privacy Hybrid',status:'Live Builder',
+   simple:"Zano is a cryptocurrency that's private by default. All transactions are automatically confidential. But if you need to prove a transaction (for taxes, for example), you can choose to reveal it.",
+   tags:['Private by Default','Confidential Assets','Selective Disclosure','Hybrid'],
+   risks:[
+    "Extremely small market cap and community limits ecosystem growth potential",
+    "Privacy coin regulatory risk is increasing globally with potential delistings",
+    "Very limited developer ecosystem and third party integrations",
+    "Low mainstream awareness makes adoption growth slow and unpredictable"
+   ],
+   desc:'Privacy-by-default hybrid blockchain with confidential assets and selective disclosure.',
+   x:'https://x.com/zano_project',website:'https://zano.org'},
+  {rank:55,symbol:'AIOZ',name:'AIOZ Network',category:'DePIN Video',status:'Live Builder',
+   simple:"AIOZ is a decentralized Netflix. Instead of Netflix paying for data centers, AIOZ distributes the streaming across thousands of nodes worldwide. You watch a video through thousands of participants, not a single server.",
+   tags:['Decentralized Streaming','Video and AI','Global Network','Decentralized CDN'],
+   risks:[
+    "Decentralized video delivery faces strong competition from established CDN providers",
+    "Real usage metrics and node network growth are difficult to independently verify",
+    "Content delivery is a low margin business making sustainable tokenomics challenging",
+    "Limited mainstream visibility outside of the DePIN crypto community"
+   ],
+   desc:'Decentralized AI-powered video streaming and storage DePIN network.',
+   x:'https://x.com/AIOZNetwork',website:'https://aioz.network'},
+  {rank:56,symbol:'KAITO',name:'Kaito',category:'AI Search',status:'Live Builder',
+   simple:"Kaito is an AI search engine specialized in crypto. It analyzes in real time everything being said on Twitter, blogs, and crypto forums, and gives you intelligent summaries. A personal crypto analyst available 24/7.",
+   tags:['AI and Crypto','Real-Time Research','Sentiment Analysis','Yaps and Attention'],
+   risks:[],
+   desc:'AI-native crypto information search layer analyzing real-time Web3 data.',
+   x:'https://x.com/KaitoAI',website:'https://kaito.ai'},
+  {rank:57,symbol:'ERG',name:'Ergo',category:'L1 Privacy',status:'Live Builder',
+   simple:"Ergo is a blockchain focused on privacy and DeFi, with a very flexible programming system called eUTXO. It enables complex smart contracts while staying true to the Bitcoin philosophy.",
+   tags:['Privacy','eUTXO Smart Contracts','DeFi','Bitcoin-Minded'],
+   risks:[
+    "Ergo has a small community and limited visibility despite strong technical fundamentals",
+    "Proof of work model faces ongoing criticism and potential regulatory pressure",
+    "DeFi ecosystem is underdeveloped compared to leading smart contract platforms",
+    "Limited exchange listings reduce accessibility for mainstream investors"
+   ],
+   desc:'eUTXO smart contract platform combining privacy with flexible DeFi capabilities.',
+   x:'https://x.com/ergo_platform',website:'https://ergoplatform.org'},
+  {rank:58,symbol:'CHEQ',name:'Cheqd',category:'Infra Identity',status:'Live Builder',
+   simple:"Cheqd lets you have a digital identity that truly belongs to you. Instead of Google proving who you are, you have 'verifiable credentials' stored on the blockchain that you fully control.",
+   tags:['Decentralized Identity','Self-Sovereign DID','Verifiable Credentials','Web3 ID'],
+   risks:[
+    "Decentralized identity is a niche market that has struggled to achieve mass adoption",
+    "Revenue model still unclear — monetizing verifiable credentials is complex",
+    "Heavily dependent on enterprise partnerships which are slow and unpredictable to close",
+    "Small team and limited brand awareness outside the identity-focused crypto community"
+   ],
+   desc:'Decentralized identity and verifiable credentials infrastructure for Web3.',
+   x:'https://x.com/cheqd_io',website:'https://cheqd.io'},
+  {rank:59,symbol:'ZAMA',name:'Zama',category:'Privacy FHE',status:'Live Builder',
+   simple:"Zama works on 'fully homomorphic encryption'. This allows computations to be performed on encrypted data without ever decrypting it. Imagine an accountant calculating your taxes without ever seeing your numbers.",
+   tags:['Revolutionary FHE','Computation on Encrypted Data','Total Privacy','Advanced Research'],
+   risks:[],
+   desc:'Fully Homomorphic Encryption primitives enabling computation on encrypted data.',
+   x:'https://x.com/zama',website:'https://zama.ai'},
+  {rank:61,symbol:'BRICKKEN',name:'Brickken',category:'RWA Tokenisation',status:'Live Builder',
+   simple:"Brickken lets companies tokenize their real-world assets — real estate, investment funds, bonds. A small business can now raise funds by issuing tokens that represent shares of its capital.",
+   tags:['Business Tokenization','Tokenized Real Estate','Fundraising','Regulated'],
+   risks:[
+    "Real World Asset tokenization faces heavy regulatory uncertainty in most jurisdictions",
+    "Slow adoption — convincing traditional asset owners to tokenize requires long sales cycles",
+    "Limited track record with few completed tokenization deals publicly verifiable"
+   ],
+   desc:'Enterprise RWA tokenization platform for compliant real-world asset issuance.',
+   x:'https://x.com/brickken',website:'https://brickken.com'},
+  {rank:62,symbol:'NOCK',name:'Nockchain',category:'L1 PoW',status:'Live Builder',
+   simple:"Nockchain is a minimalist blockchain that starts from scratch with a streamlined proof-of-work logic. The idea: create the simplest and most verifiable blockchain possible. For purists who believe less is more.",
+   tags:['Minimalist','Proof of Work','Verifiable','Pure Philosophy'],
+   risks:[],
+   desc:'Minimal logic proof-of-work chain built for maximal verifiable computation.',
+   x:'https://x.com/Nockchain',website:'https://nockchain.org'},
+  {rank:63,symbol:'AUDIO',name:'Audius',category:'DePIN Media',status:'Live Builder',
+   simple:"Audius is a decentralized Spotify. Artists publish their music directly and receive 90% of revenue (compared to 15-20% on Spotify). Fans support their artists directly with no middleman.",
+   tags:['Decentralized Music','Fair Artist Payouts','No Labels','Web3 Streaming'],
+   risks:[],
+   desc:'Decentralized music streaming protocol where artists earn 90% of revenues directly.',
+   x:'https://x.com/AudiusProject',website:'https://audius.co'},
+  {rank:64,symbol:'KAS',name:'Kaspa',category:'L1 BlockDAG',status:'Live Builder',
+   simple:"Kaspa solves Bitcoin's slowness. Instead of a single linear chain of blocks, Kaspa creates multiple blocks in parallel simultaneously (a DAG). The result: Bitcoin's speed multiplied by 100, with the same security.",
+   tags:['BlockDAG','100x Faster than BTC','Proof of Work','Scalability'],
+   risks:[],
+   desc:'High-speed BlockDAG PoW enabling parallel block processing for massive throughput.',
+   x:'https://x.com/kaspanet',website:'https://kaspa.org'},
+  {rank:65,symbol:'NOS',name:'Nosana',category:'AI GPU DePIN',status:'Live Builder',
+   simple:"Nosana is a decentralized GPU marketplace on Solana. AI developers pay to run their models on GPUs owned by individuals. Automatic, fast, and far cheaper than Amazon AWS or Google Cloud.",
+   tags:['GPU for AI','Cheaper than AWS','Solana','Decentralized AI Inference'],
+   risks:[
+    "Decentralized GPU compute for AI is an early market with unproven demand at scale",
+    "Nosana is heavily dependent on Solana ecosystem health and performance",
+    "Competition from larger and better funded compute networks is intensifying",
+    "Real GPU utilization metrics are difficult to independently verify"
+   ],
+   desc:'Solana-based GPU compute marketplace for AI inference at lower cost than cloud.',
+   x:'https://x.com/nosana_ai',website:'https://nosana.io'},
+  {rank:66,symbol:'GRASS',name:'Grass',category:'AI DePIN Bandwidth',status:'Live Builder',
+   simple:"Grass pays you for your unused internet bandwidth. You install an extension, and when you're not using your full connection, Grass uses it to collect web data for AI companies. You sleep, you earn.",
+   tags:['Monetize Your Connection','AI Data Collection','Browser Extension','Passive Income'],
+   risks:[],
+   desc:'Bandwidth DePIN network monetizing idle internet connections for AI data collection.',
+   x:'https://x.com/grass',website:'https://grass.io'},
+  {rank:67,symbol:'AKT',name:'Akash Network',category:'DePIN Cloud',status:'Live Builder',
+   simple:"Akash is a decentralized Amazon Web Services. Data centers around the world rent out their computing power. Developers can deploy their applications for 80% less than on Amazon or Google.",
+   tags:['Decentralized Cloud','80% Cheaper than AWS','Open Source','Docker Compatible'],
+   risks:[],
+   desc:'Decentralized cloud compute marketplace — deploy apps 80% cheaper than AWS.',
+   x:'https://x.com/akashnet',website:'https://akash.network'},
+  {rank:68,symbol:'OM',name:'Mantra',category:'RWA Cosmos',status:'Live Builder',
+   simple:"Mantra is a Cosmos blockchain specialized in tokenizing real-world assets with built-in legal compliance. It has signed partnerships with major Middle Eastern real estate firms to bring billions in assets on-chain.",
+   tags:['Middle East RWA','Regulatory Compliance','Tokenized Real Estate','Cosmos'],
+   risks:[
+    "RWA tokenization faces heavy regulatory uncertainty across most jurisdictions",
+    "MANTRA chain is still early with limited real assets tokenized so far",
+    "Strong dependence on regulatory approvals which are slow and unpredictable",
+    "Token price has been driven heavily by narrative rather than proven fundamentals"
+   ],
+   desc:'Cosmos-native RWA chain with built-in compliance for tokenizing real-world assets.',
+   x:'https://x.com/MANTRA_Chain',website:'https://mantra.finance'},
+  {rank:69,symbol:'PHA',name:'Phala Network',category:'Privacy TEE',status:'Live Builder',
+   simple:"Phala uses a special technology (TEE) to run confidential code. Companies can process sensitive data (medical, financial) on the blockchain without ever exposing that data.",
+   tags:['Confidential TEE','Medical Data','Private AI','Confidential Cloud'],
+   risks:[],
+   desc:'TEE-based confidential compute network for private off-chain processing on-chain.',
+   x:'https://x.com/PhalaNetwork',website:'https://phala.network'},
+  {rank:70,symbol:'IO',name:'Io.net',category:'DePIN GPU',status:'Live Builder',
+   simple:"Io.net aggregates thousands of dispersed GPUs (from data centers and individuals) into a single unified super-cluster. AI companies rent this massive network for their models, at a fraction of the usual price.",
+   tags:['GPU Aggregator','AI Super-Cluster','Cost Efficient','Decentralized'],
+   risks:[
+    "Decentralized GPU compute market is competitive with Render, Akash and centralized clouds",
+    "Verifying actual compute delivery on-chain remains a technically challenging problem",
+    "Enterprise AI clients prefer reliability guarantees that decentralized networks struggle to provide",
+    "Token incentive model needs to remain attractive to GPU providers long term"
+   ],
+   desc:'Decentralized GPU network aggregating idle compute globally for AI/ML workloads.',
+   x:'https://x.com/ionet',website:'https://io.net'},
+  {rank:71,symbol:'TIG',name:'The Innovation Game',category:'DePIN DeSci',status:'Live Builder',
+   simple:"TIG is a permanent algorithm competition. Researchers submit algorithms to solve optimization problems, and the best ones are rewarded with tokens. Useful mining that advances science.",
+   tags:['Algorithmic Innovation','Useful Mining','DeSci','Rewards for Researchers'],
+   risks:[
+    "Very early stage project with limited adoption and ecosystem still being built",
+    "Small community and low liquidity making the token vulnerable to high volatility",
+    "Proof of useful work concept is innovative but unproven at scale",
+    "Limited developer tooling and documentation compared to more mature projects"
+   ],
+   desc:'Algorithmic proof-of-work rewarding developers who solve real optimization problems.',
+   x:'https://x.com/tigfoundation',website:'https://tig.foundation'},
+  {rank:73,symbol:'SERV',name:'OpenServ',category:'AI Agents',status:'Live Builder',
+   simple:"OpenServ creates a network of AI agents that work together. Imagine a team of specialized AI robots — one searches for information, another analyzes it, a third writes the report — collaborating on complex tasks.",
+   tags:['Multi-Agent AI','AI Collaboration','Automation','Specialized Agents'],
+   risks:[
+    "AI agent marketplace is a very early and unproven market segment",
+    "Very early stage project with extremely limited track record",
+    "Competition from centralized AI platforms is intense and well funded",
+    "Token utility and value accrual model is still being established"
+   ],
+   desc:'Multi-agent AI braid protocol for coordinating specialized autonomous AI tasks.',
+   x:'https://x.com/openservai',website:'https://openserv.ai'},
+  {rank:74,symbol:'DYDX',name:'dYdX',category:'DeFi Perps',status:'Live Builder',
+   simple:"dYdX is a decentralized futures exchange. You can bet on Bitcoin going up or down with leverage, without ever creating an account or depositing on a centralized platform.",
+   tags:['Decentralized Perpetuals','Leverage without KYC','Order Book','Cosmos L1'],
+   risks:[
+    "Migration to its own appchain created friction and reduced user base initially",
+    "Perpetuals DEX space is intensely competitive with Hyperliquid gaining significant share",
+    "Token inflation from trading rewards has historically created sell pressure",
+    "Regulatory scrutiny on derivatives platforms is increasing globally"
+   ],
+   desc:'Cosmos-native perpetuals exchange with on-chain order book and no KYC.',
+   x:'https://x.com/dYdX',website:'https://dydx.trade'},
+  {rank:75,symbol:'GMX',name:'GMX',category:'DeFi Perps',status:'Live High TVL',
+   simple:"GMX lets you trade crypto with leverage (up to 100x) in a decentralized way. Liquidity comes from pools provided by users who earn fees. A derivatives exchange where users are also the market-makers.",
+   tags:['100x Leverage','Community Liquidity','No KYC','Decentralized Perps'],
+   risks:[
+    "Perpetuals DEX space has become extremely competitive with Hyperliquid dominating",
+    "Revenue is highly dependent on trading volume which drops sharply in bear markets",
+    "Smart contract risk is significant given the complexity of the GLP liquidity model",
+    "GMX V2 migration fragmented liquidity temporarily affecting user experience"
+   ],
+   desc:'Decentralized perpetual exchange with GLP synthetic liquidity from community LPs.',
+   x:'https://x.com/GMX_IO',website:'https://gmx.io'},
+  {rank:76,symbol:'BERA',name:'Berachain',category:'L1 PoL',status:'Live Builder',
+   simple:"Berachain invented 'Proof of Liquidity': to validate the network, validators must provide DeFi liquidity. Security and DeFi are merged. It's like needing to prove you contribute to the economy in order to vote.",
+   tags:['Proof of Liquidity','Security + DeFi Merged','Cosmos','PoL Innovation'],
+   risks:[
+    "Very early stage mainnet with limited proven track record",
+    "Proof of Liquidity model is innovative but unproven at scale over time",
+    "Heavy reliance on incentives to bootstrap liquidity which may not be sustainable",
+    "Faces intense competition from established DeFi ecosystems"
+   ],
+   desc:'Proof-of-Liquidity Cosmos L1 that aligns validator incentives with DeFi TVL growth.',
+   x:'https://x.com/berachain',website:'https://berachain.com'},
+  {rank:77,symbol:'MONAD',name:'Monad',category:'L1 Parallel EVM',status:'Live Builder',
+   simple:"Monad targets 10,000 transactions per second while remaining Ethereum-compatible. How? By executing transactions in parallel instead of one by one. Imagine a kitchen with 100 chefs instead of just one.",
+   tags:['10,000 TPS','Ethereum Compatible','Parallel Execution','Super-Fast EVM'],
+   risks:[],
+   desc:'Parallel EVM L1 targeting 10,000 TPS with pipelined MonadBFT execution.',
+   x:'https://x.com/monad_xyz',website:'https://monad.xyz'},
+  {rank:78,symbol:'PIEVERSE',name:'Pieverse',category:'Payments Web3 Infra',status:'Live Builder',
+   simple:"Pieverse creates the payment infrastructure for Web3. Imagine invoices, receipts, and checks that exist directly on the blockchain — verifiable by anyone, impossible to forge. Companies can be audited, pay taxes, and prove transactions, all while staying on-chain.",
+   tags:['On-Chain Invoices','Verifiable Receipts','Tax Compliance','Web3 Payments'],
+   risks:[],
+   desc:'Web3 payment infrastructure with on-chain verifiable invoices, receipts and checks.',
+   x:'https://x.com/Pieverse_io',website:'https://pieverse.io'},
+  {rank:79,symbol:'VET',name:'VeChain',category:'Supply Chain / Enterprise',status:'Live Builder',
+   simple:"VeChain uses blockchain to trace products from manufacturer to end customer. Whether fighting counterfeits, proving the authenticity of a luxury item, or managing food traceability — all via QR code and blockchain. Enterprises get full transparency, consumers get certainty.",
+   tags:['Product Traceability','Anti-Counterfeiting','Supply Chain','Enterprise Blockchain'],
+   risks:[
+    "Enterprise blockchain adoption has been slower and harder than initially projected",
+    "Heavily dependent on a small number of large enterprise partnerships for credibility",
+    "Public blockchain activity remains limited — most use cases are private or permissioned",
+    "VeChain Foundation has significant centralized control over network decisions"
+   ],
+   desc:'Enterprise blockchain for supply chain transparency and product authentication.',
+   x:'https://x.com/VeChainThor',website:'https://vechain.org'},
+  {rank:80,symbol:'XLM',name:'Stellar',category:'Payments',status:'Live Builder',
+   simple:"Stellar enables individuals and small businesses to send international transfers almost instantly and for nearly nothing. Think sending $1,000 to Uganda in 30 seconds for a fraction of a cent, instead of waiting 5 days. Widely used by banks in developing nations.",
+   tags:['Cross-Border Payments','Ultra-Fast','Near-Zero Fees','Financial Inclusion'],
+   risks:[
+    "Stellar Development Foundation controls a large portion of XLM supply creating centralization concerns",
+    "Adoption has been slower than expected despite years of partnership announcements",
+    "Heavily dependent on a few key partnerships like MoneyGram for real usage"
+   ],
+   desc:'Distributed payment system enabling fast, affordable cross-border transfers globally.',
+   x:'https://x.com/StellarOrg',website:'https://stellar.org'},
+  {rank:81,symbol:'LTC',name:'Litecoin',category:'Payments PoW',status:'Live Builder',
+   simple:"Litecoin was the 'digital silver' to Bitcoin's gold. Faster and cheaper than Bitcoin, it was a payments standard for years. Today it remains a reliable, battle-tested crypto for simple and fast payments.",
+   tags:['Fast Payments','Proof of Work','Classic Crypto','Cheaper than BTC'],
+   risks:[
+    "Often seen as a legacy project with no major technical innovation since launch",
+    "No strong unique value proposition — overshadowed by Bitcoin and faster newer chains",
+    "Developer activity is low and ecosystem growth has stagnated"
+   ],
+   desc:'Established PoW payment chain widely used for transactions and payments.',
+   x:'https://x.com/LitecoinProject',website:'https://litecoin.org'},
+  {rank:82,symbol:'XPL',name:'Plasma',category:'Stablecoin L1',status:'Live Builder',
+   simple:"Plasma is a blockchain built to host stablecoins on the most secure technology available. It combines Proof of Work security with energy efficiency, designed as a stable foundation for financial applications.",
+   tags:['Native Stablecoins','Secure L1','Stable Finance','Payment Infrastructure'],
+   risks:[
+    "Very early stage project with extremely limited track record",
+    "Small team and low visibility compared to established L2 players",
+    "Highly speculative with valuation driven mostly by narrative"
+   ],
+   desc:'Proof-of-Work L1 chain designed as secure infrastructure for stablecoin settlement.',
+   x:'https://x.com/PlasmaChain',website:'https://plasma.io'},
+  {rank:83,symbol:'VSN',name:'Vision',category:'RWA / Web3 Infra',status:'Live Builder',
+   simple:"Vision connects the physical world to Web3. It enables companies to have verifiable on-chain identities, tokenize real-world assets, and build decentralized applications that interface with the physical world.",
+   tags:['RWA & Identity','Web3 Infrastructure','Enterprise','Real-to-Digital Bridge'],
+   risks:[
+    "Very niche market focused on automotive and mobility sector",
+    "Slow enterprise adoption cycle in the automotive industry",
+    "Limited visibility and community size compared to broader DePIN projects"
+   ],
+   desc:'Web3 infrastructure protocol connecting real-world identity and RWA tokenization.',
+   x:'https://x.com/VisionProtocol',website:'https://vision.tech'},
+  {rank:84,symbol:'RSR',name:'Reserve Rights',category:'Stablecoins / Gov',status:'Live Builder',
+   simple:"RSR governs the Reserve protocol, which creates decentralized stablecoins backed by diversified asset baskets. RSR holders vote on system parameters and receive rewards for maintaining stability.",
+   tags:['Stablecoin Governance','Diversified Assets','DAO','Decentralized Stability'],
+   risks:[
+    "Reserve Protocol's stablecoin model has yet to achieve significant mainstream adoption",
+    "Regulatory uncertainty around algorithmic and basket stablecoins remains high",
+    "RSR token value accrual depends heavily on RToken growth which is still early",
+    "Stablecoin space is extremely competitive with well funded centralized alternatives"
+   ],
+   desc:'Governance token for decentralized stablecoin protocol backed by diversified assets.',
+   x:'https://x.com/reserveprotocol',website:'https://reserve.org'},
+  {rank:85,symbol:'S',name:'Sonic',category:'L1 EVM',status:'Live Builder',
+   simple:"Sonic is the high-performance relaunch of Fantom. Blazing fast, low cost, and fully Ethereum-compatible. Built for developers who want Solana's speed with Ethereum's ecosystem.",
+   tags:['Ultra-Fast','EVM Compatible','Low Fees','Web3 Developers'],
+   risks:[],
+   desc:'High-performance EVM L1 with blazing speed and low transaction costs.',
+   x:'https://x.com/soniclabs',website:'https://soniclabs.com'},
+  {rank:86,symbol:'SENT',name:'Sentient',category:'AI / AGI',status:'Live Builder',
+   simple:"Sentient builds infrastructure for highly autonomous AI agents. The idea: give AI the ability to have true economic autonomy on the blockchain. AI agents that negotiate, invest, and earn entirely on their own.",
+   tags:['Autonomous AGI','Economic AI Agents','Digital Autonomy','Decentralized Intelligence'],
+   risks:[],
+   desc:'Infrastructure enabling autonomous AGI agents with economic participation and rights.',
+   x:'https://x.com/SentientAGI',website:'https://sentient.xyz'},
+  {rank:87,symbol:'ENA',name:'Ethena',category:'Synthetic Stablecoin',status:'Live Builder',
+   simple:"Ethena creates synthetic stablecoins without needing centralized 1:1 dollar reserves. By using hedging contracts in crypto markets, it achieves price stability while keeping users in full control of their assets.",
+   tags:['Synthetic Stablecoins','No Central Reserves','Yield','DeFi Innovation'],
+   risks:[],
+   desc:'Synthetic stablecoin protocol creating price stability through perpetual futures.',
+   x:'https://x.com/ethena',website:'https://ethena.fi'},
+  {rank:88,symbol:'XTZ',name:'Tezos',category:'L1 PoS',status:'Live Builder',
+   simple:"Tezos is a blockchain that upgrades itself democratically without hard forks. Stakeholders vote on protocol changes that apply automatically. A self-evolving system where the community directly decides the code.",
+   tags:['Self-Amending','On-Chain Governance','Eco-Friendly PoS','Fork-Free'],
+   risks:[],
+   desc:'Self-amending blockchain with on-chain governance enabling protocol upgrades by vote.',
+   x:'https://x.com/tezos',website:'https://tezos.com'},
+  {rank:89,symbol:'IMX',name:'Immutable',category:'Gaming L2',status:'Live Builder',
+   simple:"Immutable is the L2 built exclusively for gaming. It offers ultra-low fees and fast scaling, hosting AAA game studios and the most active gaming ecosystem in Web3.",
+   tags:['Gaming L2','NFTs & Games','Zero Gas Fees','Gaming Ecosystem'],
+   risks:[
+    "NFT market downturn has significantly reduced activity on Immutable X",
+    "Gaming blockchain space is crowded with Ronin, Beam and others competing directly",
+    "Heavy dependence on a few flagship games for most of the network activity",
+    "NFT volumes remain far below 2021-2022 peak with uncertain recovery timeline"
+   ],
+   desc:'Gaming-focused Ethereum L2 with zero fees for mints and trades.',
+   x:'https://x.com/Immutable',website:'https://immutable.com'},
+  {rank:91,symbol:'SPK',name:'Spark',category:'Stable Lending',status:'Live Builder',
+   simple:"Spark is a stable lending platform backed by stablecoin reserves, designed for maximum predictability. Lend USDC and earn safe, predictable yield with no exposure to crypto volatility.",
+   tags:['Secure Lending','Stable Yields','USDC Reserves','Conservative Finance'],
+   risks:[],
+   desc:'Stablecoin lending platform offering predictable yields backed by stable reserves.',
+   x:'https://x.com/spark',website:'https://spark.money'},
+  {rank:92,symbol:'CVX',name:'Convex',category:'Yield Optimization',status:'Live Builder',
+   simple:"Convex boosts yields for Curve liquidity providers. By staking your Curve LP tokens through Convex, you earn boosted rewards without needing to lock CRV yourself. A top-tier yield optimization layer.",
+   tags:['Boosted Yields','Yield Farming','Curve+','Advanced DeFi'],
+   risks:[
+    "Convex is entirely dependent on Curve Finance health — if Curve struggles, Convex follows",
+    "The ve-tokenomics model has become less dominant as DeFi evolves",
+    "Limited utility outside of the Curve ecosystem",
+    "Ongoing Curve and Convex governance wars create unpredictable protocol dynamics"
+   ],
+   desc:'Yield optimizer for Curve Finance providing amplified rewards to liquidity providers.',
+   x:'https://x.com/ConvexFinance',website:'https://convex.finance'},
+  {rank:93,symbol:'1INCH',name:'1inch',category:'DEX Aggregator',status:'Live Builder',
+   simple:"1inch is the price aggregator for DEXes. It searches across 100+ decentralized exchanges to find you the best rate for any swap, in a single transaction. You always get the optimal price.",
+   tags:['Best DEX Price','Aggregation','Minimal Slippage','Multi-Chain'],
+   risks:[],
+   desc:'DEX aggregator finding optimal swap routes across multiple protocols and chains.',
+   x:'https://x.com/1inchprotocol',website:'https://1inch.io'},
+  {rank:94,symbol:'COMP',name:'Compound',category:'Lending',status:'Live Builder',
+   simple:"Compound is DeFi's pioneering lending protocol. Deposit your crypto and earn interest automatically. Governance is fully decentralized — COMP holders vote on all protocol decisions.",
+   tags:['Pioneer Lending','Decentralized Governance','Interest Rates','DeFi Foundation'],
+   risks:[
+    "Compound has lost significant market share to Aave and newer lending protocols",
+    "Governance participation is low with a small number of large holders controlling decisions",
+    "Limited innovation since launch — product has not evolved significantly",
+    "DeFi lending space is becoming increasingly competitive with thinner margins"
+   ],
+   desc:'Pioneering decentralized lending protocol with algorithmic interest rate setting.',
+   x:'https://x.com/compoundfinance',website:'https://compound.finance'},
+  {rank:95,symbol:'THETA',name:'Theta',category:'Video DePIN',status:'Live Builder',
+   simple:"Theta is a blockchain for decentralized video. Users share their bandwidth and storage to relay content and earn tokens. Think Netflix without centralized servers — powered by the community's spare capacity.",
+   tags:['Video Streaming','Shared Bandwidth','Community Economy','Video Performance'],
+   risks:[
+    "Video streaming blockchain has failed to achieve mainstream platform adoption",
+    "Centralized streaming platforms like YouTube and Twitch remain dominant",
+    "Token inflation from staking rewards creates ongoing sell pressure",
+    "Real usage metrics remain modest despite years of development"
+   ],
+   desc:'Video streaming DePIN network where users share bandwidth to deliver content.',
+   x:'https://x.com/Theta_Network',website:'https://theta.tv'},
+  {rank:96,symbol:'ICP',name:'Internet Computer',category:'Canister L1',status:'Live Builder',
+   simple:"Internet Computer aims to rebuild the internet on blockchain. Instead of Google hosting Gmail, ICP canisters host applications directly on-chain. A global decentralized computer replacing traditional data centers.",
+   tags:['Decentralized Internet','Canisters','On-Chain Apps','Web3 Infrastructure'],
+   risks:[
+    "Highly centralized at launch — the DFINITY Foundation controlled a large share of tokens and voting power",
+    "Massive token inflation in early years caused significant price dilution for holders",
+    "Complex architecture makes it hard for developers to build and audit compared to Ethereum",
+    "History of controversy around team communication and tokenomics transparency",
+    "Still limited real-world adoption despite years of development and large funding"
+   ],
+   desc:'World Computer running smart contract canisters replacing traditional cloud servers.',
+   x:'https://x.com/dfinity',website:'https://internetcomputer.org'},
+  {rank:97,symbol:'HYPER',name:'Hyperlane',category:'Interop Messaging',status:'Live Builder',
+   simple:"Hyperlane is blockchain's postal service. It creates a universal communication protocol between all blockchains. Run one app across 100 chains simultaneously — Hyperlane is the cross-chain messaging layer.",
+   tags:['Cross-Chain Messaging','Interoperability','100+ Chains','Infrastructure'],
+   risks:[
+    "Cross-chain messaging space is competitive with LayerZero and Wormhole well established",
+    "Permissionless interoperability model introduces new security assumptions to evaluate",
+    "Adoption depends on developers choosing Hyperlane over more established alternatives",
+    "Limited mainstream visibility outside of the cross-chain developer community"
+   ],
+   desc:'Universal interoperability layer enabling cross-chain messaging and state verification.',
+   x:'https://x.com/hyperlane',website:'https://hyperlane.xyz'},
+  {rank:98,symbol:'HYPE',name:'Hyperliquid',category:'Perp DEX / L1',status:'Live Builder',
+   simple:"Hyperliquid is an ultra-fast perpetuals exchange that also functions as its own L1. 1,000 order book updates per second, up to 20x leverage with no intermediary. The on-chain exchange built for serious traders.",
+   tags:['Ultra-Fast Perps','1000 OPS Order Book','50k+ Addresses','20x Leverage'],
+   risks:[],
+   desc:'Ultra-high-frequency perpetual DEX and L1 serving serious crypto traders worldwide.',
+   x:'https://x.com/hyperliquid',website:'https://hyperliquid.io'},
+  {rank:99,symbol:'ALT',name:'AltLayer',category:'Rollups / RaaS',status:'Live Builder',
+   simple:"AltLayer is infrastructure for deploying custom rollups in a few clicks. Games, enterprises, DAOs — deploy your own L2 in minutes with AltLayer's Rollup as a Service.",
+   tags:['Custom Rollups','RaaS','Rollup as a Service','Fast Deployment'],
+   risks:[],
+   desc:'Restaking-based infrastructure provisioning verified rollups and sidechains instantly.',
+   x:'https://x.com/altlayer',website:'https://altlayer.io'},
+  {rank:100,symbol:'LAVA',name:'Lava Network',category:'RPC DePIN',status:'Live Builder',
+   simple:"Lava is a decentralized network of RPC nodes. Developers pay to access blockchain data through thousands of independent providers instead of a centralized gateway like Infura. Fast, resilient, and truly decentralized.",
+   tags:['Decentralized RPC Access','Distributed Nodes','Censorship-Resistant','DeFi Infrastructure'],
+   risks:[
+    "RPC infrastructure market is competitive with established players like Alchemy and Infura",
+    "Very early stage project with limited track record and unproven at scale",
+    "Developer adoption of decentralized RPC solutions has been slower than expected",
+    "Token incentive model needs to remain attractive to node operators long term"
+   ],
+   desc:'Decentralized RPC network connecting developers to thousands of independent node providers.',
+   x:'https://x.com/lavanetxyz',website:'https://lavanet.xyz'},
+  {rank:101,symbol:'QUAI',name:'Quai Network',category:'PoW L1 / Merged Mining',status:'Live Builder',
+   simple:"Quai uses merged mining with Bitcoin — by mining Bitcoin, you also mine Quai at no extra cost. A blockchain that inherits Bitcoin's security by simply combining existing miners.",
+   tags:['Merged Mining with BTC','Bitcoin Security','Mining Economy','PoW L1'],
+   risks:[
+    "Multi-threaded blockchain architecture is highly complex and unproven at scale",
+    "Very early stage with limited developer tooling and ecosystem applications",
+    "Proof of work model faces sustainability criticism in an increasingly ESG-conscious market",
+    "Small community and limited visibility outside of early adopter crypto circles"
+   ],
+   desc:'Merged-mined PoW L1 gaining security from Bitcoin miners at no additional cost.',
+   x:'https://x.com/QuaiNetwork',website:'https://quai.network'},
+  {rank:102,symbol:'RPL',name:'Rocket Pool',category:'ETH Liquid Staking',status:'Live Builder',
+   simple:"Rocket Pool decentralizes Ethereum staking. Individuals can become validators with just 16 ETH instead of 32, and Rocket Pool handles the rest. A truly decentralized staking pool with no central control.",
+   tags:['Decentralized Staking','16 ETH Threshold','rETH Token','Minimalist'],
+   risks:[],
+   desc:'Decentralized ETH staking pool enabling validators with 16 ETH collateral.',
+   x:'https://x.com/Rocket_Pool',website:'https://rocketpool.net'},
+  {rank:103,symbol:'BEAM',name:'Beam',category:'Gaming Subnet',status:'Live Builder',
+   simple:"Beam is an Avalanche subnet optimized for gaming. It offers very low fees and cross-chain scaling to make Web3 games as fast and seamless as traditional video games.",
+   tags:['Gaming Subnet','Avalanche','Low Fees','Cross-Chain Gaming'],
+   risks:[
+    "Gaming blockchain space is highly competitive with many well funded rivals",
+    "Game adoption depends on external studios which is slow and unpredictable",
+    "Most blockchain games have struggled to retain players long term",
+    "Heavy dependence on Merit Circle ecosystem for governance and direction"
+   ],
+   desc:'Gaming-optimized Avalanche subnet with seamless cross-chain asset interoperability.',
+   x:'https://x.com/beam_l2',website:'https://beam.xyz'},
+
+  {rank:105,symbol:'VVV',name:'Venice Token',category:'AI Privacy',status:'Live Builder',
+   simple:"Venice is a decentralized, privacy-first AI platform. Use an open-source alternative to ChatGPT without handing your data to OpenAI. Everything runs locally or on a distributed network — your privacy comes first.",
+   tags:['Private AI','Decentralized ChatGPT','Privacy-First','Open Source'],
+   risks:[],
+   desc:'Decentralized, privacy-first AI platform offering free uncensored AI without data collection.',
+   x:'https://x.com/AskVenice',website:'https://venice.ai'},
+  {rank:106,symbol:'FT',name:'Flying Tulip',category:'DeFi Superapp',status:'Live Builder',
+   simple:"Flying Tulip is an all-in-one DeFi super-app: trading, staking, swapping, lending, NFTs — all in a single platform. Designed to make DeFi as accessible and intuitive as a traditional banking app.",
+   tags:['DeFi Superapp','All-in-One','Accessible','Simple Interface'],
+   risks:[],
+   desc:'DeFi superapp integrating trading, staking, lending and NFT marketplace in one platform.',
+   x:'https://x.com/flyingtulip_',website:'https://flyingtulip.com'},
+  {rank:107,symbol:'CSPR',name:'Casper Network',category:'Enterprise L1',status:'Live Builder',
+   simple:"Casper is an enterprise-grade blockchain built for production environments. It offers immediate finality, zero possibility of forks, and full legal compliance for Fortune 500 companies. Blockchain built for serious organizations.",
+   tags:['Enterprise','Production-Ready','Immediate Finality','Enterprise Blockchain'],
+   risks:[],
+   desc:'Enterprise-grade PoS L1 with absolute finality designed for Fortune 500 companies.',
+   x:'https://x.com/Casper_Network',website:'https://casper.network'},
+  {rank:108,symbol:'NIL',name:'Nillion',category:'Privacy Blind Computation',status:'Live Builder',
+   simple:"Nillion specializes in 'blind computation' — performing calculations on data without ever revealing it. Perfect for sensitive medical or financial data where processing happens without exposing the underlying information.",
+   tags:['Blind Computation','Advanced MPC','Protected Data','Confidential Computing'],
+   risks:[
+    "Blind computation technology is extremely complex and still maturing",
+    "Very early stage with limited real world applications deployed so far",
+    "Privacy-focused compute faces potential regulatory scrutiny as governments target encryption",
+    "Developer onboarding is challenging due to the complexity of the underlying technology"
+   ],
+   desc:'Privacy-first blockchain enabling blind multi-party computation on sensitive data.',
+   x:'https://x.com/nillion',website:'https://nillion.com'},
+  {rank:109,symbol:'VIRTUAL',name:'Virtuals Protocol',category:'AI Agent',status:'Live Builder',
+   simple:"Virtuals Protocol lets you create, own, and monetize autonomous AI agents on the blockchain. Each AI agent is tokenized — you can own a share of it, earn revenue it generates, and the agent can act autonomously in games, apps or services. It's the first protocol that turns AI agents into co-owned financial assets.",
+   tags:['Tokenized AI Agents','Co-ownership','Autonomous AI','Base chain','GameFi AI'],
+   risks:[],
+   desc:'Protocol for launching and co-owning AI agents as tokenized on-chain assets with revenue sharing.',
+   x:'https://x.com/virtuals_io',website:'https://virtuals.io'},
+  {rank:110,symbol:'LIT',name:'Lighter',category:'DeFi',status:'Live Builder',
+   simple:"Lighter is a decentralized perpetuals exchange built for speed and capital efficiency. It uses a fully on-chain order book to offer professional-grade trading without intermediaries.",
+   tags:['Perpetuals','On-chain order book','DeFi trading','Capital efficiency'],
+   risks:[
+    "Very early stage project with limited track record and unproven at scale",
+    "Perpetuals DEX space is extremely competitive with well funded rivals",
+    "On-chain order book model is technically complex and hard to scale"
+   ],
+   desc:'Decentralized perpetuals exchange with fully on-chain order book for professional trading.',
+   x:'https://x.com/lighter_xyz',website:'https://lighter.xyz'},
+  {rank:111,symbol:'MNT',name:'Mantle',category:'L2',status:'Live Builder',
+   simple:"Mantle is an Ethereum Layer 2 network focused on low fees and high throughput. It uses a modular architecture separating execution, data availability and settlement for maximum efficiency.",
+   tags:['Ethereum L2','Modular','Low fees','High throughput'],
+   risks:[],
+   desc:'Modular Ethereum L2 with separated execution and data availability layers for scalability.',
+   x:'https://x.com/0xMantle',website:'https://mantle.xyz'},
+  {rank:112,symbol:'SEI',name:'Sei',category:'L1',status:'Live Builder',
+   simple:"Sei is a high-performance Layer 1 blockchain optimized for trading applications. It features a built-in order book DEX, parallel transaction execution and sub-second finality for maximum speed.",
+   tags:['L1','High performance','Trading','Parallel execution'],
+   risks:[],
+   desc:'Parallelized EVM Layer 1 with native order book and sub-400ms finality optimized for trading.',
+   x:'https://x.com/SeiNetwork',website:'https://sei.io'},
+  {rank:113,symbol:'STX',name:'Stacks',category:'Bitcoin L2',status:'Live Builder',
+   simple:"Stacks is a Bitcoin Layer 2 protocol that enables smart contracts and decentralized apps secured by Bitcoin. It uses Proof of Transfer consensus to anchor to Bitcoin while adding programmability.",
+   tags:['Bitcoin L2','Smart contracts','DeFi','Bitcoin security'],
+   risks:[
+    "Bitcoin L2 narrative is compelling but actual DeFi activity on Stacks remains limited",
+    "sBTC launch has been long awaited — delays have frustrated parts of the community",
+    "Stacks has its own consensus mechanism which adds complexity and potential attack vectors",
+    "Developer ecosystem is small compared to Ethereum L2s"
+   ],
+   desc:'Bitcoin L2 enabling smart contracts and DeFi secured by Bitcoin via Proof of Transfer consensus.',
+   x:'https://x.com/Stacks',website:'https://stacks.co'},
+  {rank:114,symbol:'STABLE',name:'Stable',category:'DeFi',status:'Live Builder',
+   simple:"Stable is a decentralized protocol focused on creating and managing stable financial instruments on-chain. It aims to bring predictable, low-volatility assets to DeFi without relying on centralized issuers.",
+   tags:['Stablecoin','Decentralized','Low volatility','DeFi'],
+   risks:[],
+   desc:'Decentralized protocol for creating and managing stable financial instruments on-chain.',
+   x:'https://x.com/stable_fi',website:'https://stable.fi'},
+  {rank:115,symbol:'JUP',name:'Jupiter',category:'DeFi DEX',status:'Live Builder',
+   simple:"Jupiter is the leading DEX aggregator on Solana. It finds the best swap routes across all Solana DEXes instantly, giving users the best prices with minimal slippage. It's the backbone of Solana DeFi liquidity.",
+   tags:['DEX aggregator','Solana','Best prices','Liquidity routing'],
+   risks:[
+    "Heavily dependent on Solana ecosystem health — if Solana struggles, Jupiter follows",
+    "DEX aggregator model can be replicated, creating long-term competitive pressure",
+    "Large token supply with ongoing unlocks creates potential sell pressure",
+    "Revenue and protocol fees need to grow significantly to justify current valuation"
+   ],
+   desc:'Leading DEX aggregator on Solana routing swaps across all liquidity sources for best execution.',
+   x:'https://x.com/JupiterExchange',website:'https://jup.ag'},
+  {rank:116,symbol:'AERO',name:'Aerodrome',category:'DeFi DEX',status:'Live Builder',
+   simple:"Aerodrome is the central liquidity hub of Base chain. Built as a next-gen AMM, it incentivizes deep liquidity through its ve(3,3) tokenomics model. It quickly became the largest DEX on Base after launch.",
+   tags:['Base chain DEX','ve(3,3)','AMM','Liquidity hub'],
+   risks:[],
+   desc:'Central liquidity AMM on Base chain using ve(3,3) model for deep protocol-owned liquidity.',
+   x:'https://x.com/AerodromeFi',website:'https://aerodrome.finance'},
+  {rank:117,symbol:'CFX',name:'Conflux',category:'L1',status:'Live Builder',
+   simple:"Conflux is a high-performance L1 blockchain and the only compliant public blockchain in China. Its Tree-Graph consensus processes thousands of transactions per second while maintaining decentralization.",
+   tags:['China compliant','Tree-Graph consensus','High TPS','Regulatory friendly'],
+   risks:[
+    "Being the only compliant chain in China is a strength but also creates political risk",
+    "Ecosystem growth is largely limited to the Chinese market",
+    "Regulatory environment in China around crypto remains unpredictable",
+    "Limited international developer adoption outside Asia"
+   ],
+   desc:'High-throughput L1 using Tree-Graph consensus, the only compliant public blockchain in China.',
+   x:'https://x.com/Conflux_Network',website:'https://confluxnetwork.org'},
+  {rank:118,symbol:'TEL',name:'Telcoin',category:'Pay',status:'Live Builder',
+   simple:"Telcoin connects mobile telecom networks with DeFi to enable instant, low-cost remittances worldwide. It partners directly with telecom operators so people can send money internationally using their phone number.",
+   tags:['Remittances','Telecom','Mobile payments','Financial inclusion'],
+   risks:[
+    "Telecom partnerships are slow to close and difficult to verify in terms of real usage",
+    "Regulatory complexity around mobile money transfers in emerging markets",
+    "Adoption has been slower than roadmap suggested over the years",
+    "Token has limited utility outside of the Telcoin app ecosystem"
+   ],
+   desc:'DeFi protocol partnering with telecom operators for instant low-cost mobile remittances.',
+   x:'https://x.com/telcoin',website:'https://telco.in'},
+  {rank:119,symbol:'TRAC',name:'OriginTrail',category:'Infra',status:'Live Builder',
+   simple:"OriginTrail is a Decentralized Knowledge Graph for AI. It stores verifiable data about real-world assets on-chain, making it possible for AI systems to access trusted, tamper-proof information about supply chains, healthcare and more.",
+   tags:['Knowledge Graph','Verifiable data','AI infrastructure','Supply chain'],
+   risks:[
+    "Enterprise supply chain adoption is slow and requires long sales cycles",
+    "Knowledge graph technology is complex and hard to communicate to mainstream audiences",
+    "Limited DeFi integration means token utility is mostly tied to enterprise use cases",
+    "Small community and low visibility compared to broader AI infrastructure projects"
+   ],
+   desc:'Decentralized Knowledge Graph providing verifiable trusted data infrastructure for AI systems.',
+   x:'https://x.com/origin_trail',website:'https://origintrail.io'},
+
+  {rank:121,symbol:'MORPHO',name:'Morpho',category:'DeFi',status:'Live Builder',
+   simple:"Morpho is a decentralized lending protocol that optimizes capital efficiency by directly matching lenders and borrowers. It improves on Aave and Compound by offering better rates through peer-to-peer matching.",
+   tags:['Lending','Peer-to-peer','Capital efficiency','Better rates'],
+   risks:[],
+   desc:'Decentralized lending protocol with peer-to-peer matching for optimized borrowing rates.',
+   x:'https://x.com/MorphoLabs',website:'https://morpho.org'},
+  {rank:122,symbol:'ATOM',name:'Cosmos',category:'L1',status:'Live Builder',
+   simple:"Cosmos is the Internet of Blockchains. It lets independent blockchains communicate and exchange value with each other via IBC protocol. Think of it as the TCP/IP of crypto — the protocol that connects all chains.",
+   tags:['Interoperability','IBC protocol','Internet of Blockchains','Sovereign chains'],
+   risks:[
+    "ATOM token has weak value capture — most value accrues to appchains, not ATOM holders",
+    "IBC adoption is growing but cross-chain security model has been debated extensively",
+    "Cosmos Hub faces identity crisis — unclear what its core role is in the broader ecosystem",
+    "High inflation rate from staking rewards creates constant sell pressure on the token"
+   ],
+   desc:'Interoperability hub enabling sovereign blockchains to communicate via IBC protocol.',
+   x:'https://x.com/cosmos',website:'https://cosmos.network'},
+  {rank:123,symbol:'CFG',name:'Centrifuge',category:'RWA',status:'Live Builder',
+   simple:"Centrifuge is the leading protocol for bringing real-world assets on-chain. It allows businesses to tokenize invoices, real estate, loans and other assets to access DeFi liquidity. It powers the largest RWA pools on MakerDAO and Aave.",
+   tags:['Real World Assets','RWA tokenization','DeFi liquidity','Institutional'],
+   risks:[
+    "RWA tokenization faces heavy regulatory uncertainty across most jurisdictions",
+    "Dependent on institutional adoption which is slow and requires complex legal frameworks",
+    "Smart contract risk is amplified when real world legal agreements are involved",
+    "Limited retail appeal — mostly institutional and sophisticated DeFi users"
+   ],
+   desc:'Protocol for tokenizing real-world assets and connecting them to DeFi liquidity pools.',
+   x:'https://x.com/centrifuge',website:'https://centrifuge.io'},
+];
+
+let sortKey='rank', sortDir=1, filtered=[...data];
+let marketData={}; // Stockage des données CoinGecko
+
+// Mapping symbol → CoinGecko ID
+const symbolToGeckoId={
+  'BTC':'bitcoin','ETH':'ethereum','SOL':'solana','BNB':'binancecoin','XRP':'ripple','AVAX':'avalanche-2',
+  'DOT':'polkadot','TRX':'tron','ADA':'cardano','TON':'the-open-network','SUI':'sui','NEAR':'near','HBAR':'hedera-hashgraph',
+  'INJ':'injective-protocol','OP':'optimism','ARB':'arbitrum','STRK':'starknet','APT':'aptos','TIA':'celestia',
+  'ALGO':'algorand','QNT':'quant-network','UNI':'uniswap','AAVE':'aave','LINK':'chainlink','PYTH':'pyth-network',
+  'GRT':'the-graph','TAO':'bittensor','RENDER':'render-token','FET':'fetch-ai','ONDO':'ondo-finance',
+  'CRV':'curve-dao-token','LDO':'lido-dao','EIGEN':'eigenlayer','PENDLE':'pendle','SYRUP':'syrup',
+  'RUNE':'thorchain','SNX':'havven','FIL':'filecoin','AR':'arweave','HNT':'helium','IOTA':'iota',
+  'GLM':'golem','CKB':'nervos-network','ROSE':'oasis-network','COTI':'coti','LINEA':'linea',
+  'ESP':'espresso','ZRO':'layerzero','KSM':'kusama','PEAQ':'peaq-2','QUBIC':'qubic-network',
+  'ZANO':'zano','AIOZ':'aioz-network','KAITO':'kaito','ERG':'ergo','CHEQ':'cheqd-network','ZAMA':'zama','NOCK':'nockchain',
+  'BRICKKEN':'brickken','AUDIO':'audius','KAS':'kaspa','NOS':'nosana',
+  'GRASS':'grass','AKT':'akash-network','OM':'mantra-dao','PHA':'pha','IO':'io',
+  'TIG':'the-innovation-game','SERV':'openserv','DYDX':'dydx-chain',
+  'GMX':'gmx','BERA':'berachain-bera','MONAD':'monad','PIEVERSE':'pieverse','VET':'vechain','QUILIBRIUM':'wrapped-quil',
+  'XLM':'stellar','LTC':'litecoin','XPL':'plasma','VSN':'vision-3','RSR':'reserve-rights-token',
+  'S':'sonic-3','SENT':'sentient','ENA':'ethena','XTZ':'tezos','IMX':'immutable-x',
+  'SPK':'spark-2','CVX':'convex-finance','1INCH':'1inch','COMP':'compound-governance-token',
+  'THETA':'theta-token','ICP':'internet-computer','HYPER':'hyperlane','HYPE':'hyperliquid',
+  'ALT':'altlayer','LAVA':'lava-network','QUAI':'quai-network','RPL':'rocket-pool','BEAM':'beam-2',
+  'VVV':'venice-token','FT':'flying-tulip','CSPR':'casper-network','NIL':'nillion',
+  'VIRTUAL':'virtual-protocol',
+  'LIT':'lighter','MNT':'mantle',
+  'SEI':'sei-network','STX':'blockstack',
+  'STABLE':'stable-2','JUP':'jupiter-exchange-solana','AERO':'aerodrome-finance',
+  'CFX':'conflux-token','TEL':'telcoin','TRAC':'origintrail',
+  'MORPHO':'morpho','ATOM':'cosmos','CFG':'centrifuge'
+};
+
+async function fetchMarketData(){
+  try{
+    document.getElementById('loader').style.display='block';
+    const ids=Object.values(symbolToGeckoId).join(',');
+    const res=await fetch(`/api/coingecko?vs_currency=usd&ids=${ids}`);
+    const json=await res.json();
+    marketData={};
+    const geckoIdToSym={};
+    Object.entries(symbolToGeckoId).forEach(([sym,id])=>{geckoIdToSym[id]=sym;});
+    json.forEach(coin=>{
+      const sym=geckoIdToSym[coin.id]||coin.symbol.toUpperCase();
+      marketData[sym]={
+        price:coin.current_price,
+        change24h:coin.price_change_percentage_24h,
+        change7d:coin.price_change_percentage_7d_in_currency,
+        marketCap:coin.market_cap,
+        logo:coin.image
+      };
+    });
+    document.getElementById('loader').style.display='none';
+    render();
+  }catch(e){
+    console.error('Fetch CoinGecko error:',e);
+    document.getElementById('loader').style.display='none';
+  }
+}
+
+function getCatClass(cat){
+  if(cat.startsWith('L1')||cat.startsWith('L2')) return (cat.includes('ZK')||cat.startsWith('L2'))?'cat-L2':'cat-L1';
+  if(cat.includes('DeFi')) return 'cat-DeFi';
+  if(cat.includes('AI')) return 'cat-AI';
+  if(cat.includes('DePIN')) return 'cat-DePIN';
+  if(cat.includes('RWA')) return 'cat-RWA';
+  if(cat.includes('Privacy')) return 'cat-Privacy';
+  if(cat.includes('Infra')||cat.includes('Interop')||cat.includes('Oracle')||cat.includes('Sequencer')||cat.includes('Cross')||cat.includes('Identity')||cat.includes('P2P')||cat.includes('Indexing')) return 'cat-Infra';
+  if(cat.includes('Pay')||cat.includes('Web3')) return 'cat-Pay';
+  return 'cat-Other';
+}
+function getCatGroupLabel(cat){
+  if(cat.startsWith('L1')||cat.startsWith('L2')) return 'Layer 1 / Layer 2';
+  if(cat.includes('DeFi')) return 'DeFi';
+  if(cat.includes('AI')) return 'AI / Compute';
+  if(cat.includes('DePIN')) return 'DePIN';
+  if(cat.includes('RWA')) return 'RWA';
+  if(cat.includes('Privacy')) return 'Privacy';
+  if(cat.includes('Infra')||cat.includes('Oracle')||cat.includes('Sequencer')||cat.includes('Cross')||cat.includes('Identity')||cat.includes('P2P')||cat.includes('Indexing')) return 'Infrastructure';
+  if(cat.includes('Pay')||cat.includes('Web3')) return 'Payments';
+  return 'Other';
+}
+
+function populateCatFilter(){
+  const cats=[...new Set(data.map(d=>getCatGroupLabel(d.category)))].sort();
+  const sel=document.getElementById('filterCat');
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+}
+
+function render(){
+  const q=document.getElementById('search').value.toLowerCase().trim();
+  const cat=document.getElementById('filterCat').value;
+  filtered=data.filter(d=>{
+    const mQ=!q||d.symbol.toLowerCase().includes(q)||d.name.toLowerCase().includes(q);
+    const mC=!cat||getCatGroupLabel(d.category)===cat;
+    return mQ&&mC;
+  });
+  filtered.sort((a,b)=>{
+    if(sortKey==='rank'){
+      const ca=(marketData[a.symbol]&&marketData[a.symbol].marketCap)||0;
+      const cb=(marketData[b.symbol]&&marketData[b.symbol].marketCap)||0;
+      if(ca===0&&cb===0) return a.rank-b.rank;
+      if(ca===0) return 1;
+      if(cb===0) return -1;
+      return cb-ca;
+    }
+    let va=a[sortKey],vb=b[sortKey];
+    if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase();}
+    return va<vb?-sortDir:va>vb?sortDir:0;
+  });
+  const tbody=document.getElementById('tableBody');
+  document.getElementById('result-count').textContent=`${filtered.length} / ${data.length} tokens`;
+  if(!filtered.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="7">// NO RESULTS</td></tr>`;return;}
+  tbody.innerHTML=filtered.map((d,i)=>{
+    const market=marketData[d.symbol]||{};
+    const price=market.price?`$${market.price.toLocaleString('en-US',{maximumFractionDigits:market.price<1?8:2})}`:'-';
+    const change=market.change24h!==undefined?`<span class="change-24h ${market.change24h>=0?'change-pos':'change-neg'}">${market.change24h>=0?'+':''}${market.change24h.toFixed(2)}%</span>`:'-';
+    const change7d=market.change7d!==undefined?`<span class="change-24h ${market.change7d>=0?'change-pos':'change-neg'}">${market.change7d>=0?'+':''}${market.change7d.toFixed(2)}%</span>`:'-';
+    const cap=market.marketCap>=1e9?`$${(market.marketCap/1e9).toFixed(2)}B`:market.marketCap>0?`$${(market.marketCap/1e6).toFixed(2)}M`:'-';
+    return`
+    <tr onclick="openModal(${data.indexOf(d)})" style="animation-delay:${i*0.012}s" title="Cliquer pour comprendre ce projet">
+      <td class="rank">${i+1}</td>
+      <td><div class="symbol-cell">
+        <div class="symbol-icon">${market&&market.logo?`<img src="${market.logo}" style="width:40px;height:40px;border-radius:0;">`:d.symbol.slice(0,3)}</div>
+        <div><div class="symbol-text">${d.symbol}</div><div class="name-text hide-sm">${d.name}</div></div>
+      </div></td>
+      <td><span class="cat-badge ${getCatClass(d.category)}">${d.category}</span></td>
+      <td class="hide-sm"><span class="price-cell">${price}</span></td>
+      <td class="hide-sm">${change}</td>
+      <td class="hide-md">${change7d}</td>
+      <td class="hide-md"><span class="market-cap">${cap}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function openModal(idx){
+  const d=data[idx]; if(!d) return;
+  const mIcon=document.getElementById('m-icon');
+  const mMarket=marketData[d.symbol];
+  if(mMarket&&mMarket.logo){mIcon.innerHTML=`<img src="${mMarket.logo}" style="width:48px;height:48px;border-radius:0;">`;}
+  else{mIcon.innerHTML=d.symbol.slice(0,3);}
+  document.getElementById('m-symbol').textContent=d.symbol;
+  document.getElementById('m-name').textContent=d.name;
+  const ce=document.getElementById('m-cat');
+  ce.textContent=d.category; ce.className='cat-badge '+getCatClass(d.category);
+  document.getElementById('m-simple').textContent=d.simple;
+
+  document.getElementById('m-tags').innerHTML=(d.tags||[]).map(t=>`<span class="modal-tag">${t}</span>`).join('');
+  const risks=d.risks||[];
+  const risksDiv=document.getElementById('m-risks');
+  if(risks.length>0){risksDiv.style.display='block';document.getElementById('m-risks-content').innerHTML=risks.map(r=>`<p>• ${r}</p>`).join('');}
+  else{risksDiv.style.display='none';}
+
+  // Afficher les liens sociaux
+  const linksDiv=document.getElementById('m-links');
+  if(d.x || d.website){
+    linksDiv.style.display='block';
+    const linksContainer=linksDiv.querySelector('div:last-child');
+    let linksHTML='';
+    if(d.x){
+      linksHTML+=`<a href="${d.x}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);padding:8px 14px;border-radius:6px;color:var(--text2);text-decoration:none;font-family:var(--font-mono);font-size:11px;transition:all 0.2s;cursor:pointer;" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">𝕏 Twitter/X</a>`;
+    }
+    if(d.website){
+      linksHTML+=`<a href="${d.website}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);padding:8px 14px;border-radius:6px;color:var(--text2);text-decoration:none;font-family:var(--font-mono);font-size:11px;transition:all 0.2s;cursor:pointer;" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">🌐 Website</a>`;
+    }
+    linksContainer.innerHTML=linksHTML;
+  } else {
+    linksDiv.style.display='none';
+  }
+  
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('modalOverlay').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalDirect();});
+
+function setSort(key){
+  if(sortKey===key)sortDir*=-1;else{sortKey=key;sortDir=1;}
+  document.querySelectorAll('th').forEach(th=>th.classList.remove('sorted'));
+  const el=document.getElementById('th-'+key);
+  if(el){el.classList.add('sorted');el.querySelector('.sort-arrow').textContent=sortDir===1?'↑':'↓';}
+  render();
+}
+
+function dl(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500);}
+
+function updateStats(){
+  document.getElementById('hdr-count').textContent=data.length;
+  document.getElementById('s-total').textContent=data.length;
+  document.getElementById('s-cats').textContent=new Set(data.map(d=>getCatGroupLabel(d.category))).size;
+  document.getElementById('s-l1l2').textContent=data.filter(d=>d.category.startsWith('L1')||d.category.startsWith('L2')).length;
+  document.getElementById('s-depin').textContent=data.filter(d=>d.category.includes('DePIN')).length;
+  document.getElementById('s-ai').textContent=data.filter(d=>d.category.includes('AI')).length;
+  document.getElementById('s-priv').textContent=data.filter(d=>d.category.includes('Privacy')).length;
+}
+
+document.getElementById('search').addEventListener('input',render);
+document.getElementById('filterCat').addEventListener('change',render);
+document.getElementById('sortBy').addEventListener('change',e=>setSort(e.target.value));
+
+populateCatFilter(); updateStats(); render();
+
+// Fetch données CoinGecko au chargement et toutes les 60 secondes
+fetchMarketData();
+setInterval(fetchMarketData, 180000);
+</script>
+</body>
+</html>
