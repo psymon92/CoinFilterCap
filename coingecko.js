@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
-  const { ids, vs_currency } = req.query;
+  const { ids, vs_currency, price_change_percentage } = req.query;
 
-  const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs_currency}&ids=${ids}&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage=24h,7d&x_cg_demo_api_key=${process.env.COINGECKO_API_KEY}`;
+  const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs_currency}&ids=${ids}&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage=${price_change_percentage}&x_cg_demo_api_key=${process.env.COINGECKO_API_KEY}`;
 
   try {
     const response = await fetch(url);
