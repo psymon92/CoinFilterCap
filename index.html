@@ -1398,6 +1398,7 @@ function render(){
       <td><div class="symbol-cell">
         <div class="symbol-icon">${market&&market.logo?`<img src="${market.logo}" style="width:40px;height:40px;border-radius:0;">`:d.symbol.slice(0,3)}</div>
         <div>
+          <div class="symbol-text" style="color:var(--green);font-size:13px;font-weight:bold;">${d.symbol}</div>
           <div class="name-text hide-sm" style="color:#ffffff;font-size:16px;font-weight:700;">${d.name}</div>
           <div class="mobile-mcap">${cap}</div>
         </div>
