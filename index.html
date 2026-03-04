@@ -1289,7 +1289,7 @@ async function fetchMarketData(){
   try{
     document.getElementById('loader').style.display='block';
     const ids=Object.values(symbolToGeckoId).join(',');
-    const res=await fetch(`/api/coingecko?vs_currency=usd&ids=${ids}`);
+    const res=await fetch(`/api/coingecko?vs_currency=usd&ids=${ids}&price_change_percentage=7d`);
     const json=await res.json();
     marketData={};
     const geckoIdToSym={};
